@@ -71,6 +71,7 @@ button{
   font-weight:800;
   background:#1b2947;
   color:#fff;
+  cursor:pointer;
 }
 button.primary{
   background:linear-gradient(135deg,#2f7df6,#19b8a6);
@@ -156,6 +157,29 @@ button.danger{
   color:#9fb0d1;
   font-size:13px;
 }
+.image-tools{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.fake-file-btn{
+  display:inline-flex;
+}
+.fake-file-btn button{
+  pointer-events:none;
+}
+.canvas-wrap{
+  margin-top:12px;
+}
+#imageCanvas{
+  width:100%;
+  max-height:420px;
+  background:#0e1729;
+  border:1px dashed #47689d;
+  border-radius:12px;
+  display:none;
+}
 @media (max-width:560px){
   .slot-grid-5{grid-template-columns:repeat(5,1fr);gap:6px}
   .slot{min-height:46px;font-size:18px}
@@ -195,12 +219,34 @@ button.danger{
       </div>
     </div>
     <div class="btn-row">
-      <button onclick="addValue('pot',50)">底池+50</button>
-      <button onclick="addValue('pot',100)">底池+100</button>
-      <button onclick="addValue('call',20)">补+20</button>
-      <button onclick="addValue('call',50)">补+50</button>
-      <button onclick="setCallByRatio(0.5)">半池</button>
-      <button onclick="setCallByRatio(1)">满池</button>
+      <button type="button" onclick="addValue('pot',50)">底池+50</button>
+      <button type="button" onclick="addValue('pot',100)">底池+100</button>
+      <button type="button" onclick="addValue('call',20)">补+20</button>
+      <button type="button" onclick="addValue('call',50)">补+50</button>
+      <button type="button" onclick="setCallByRatio(0.5)">半池</button>
+      <button type="button" onclick="setCallByRatio(1)">满池</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section">图片输入</div>
+
+    <div class="image-tools">
+      <label for="imageInput" class="fake-file-btn">
+        <button type="button">上传图片 / 拍照</button>
+      </label>
+      <input id="imageInput" type="file" accept="image/*" capture="environment" style="display:none;">
+
+      <button type="button" onclick="captureScreen()">截图导入</button>
+      <button type="button" class="danger" onclick="clearImage()">清空图片</button>
+    </div>
+
+    <div class="small-note" id="imageStatus" style="margin-top:10px;">
+      还没有导入图片
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="imageCanvas"></canvas>
     </div>
   </div>
 
@@ -221,9 +267,9 @@ button.danger{
     <div class="pick-row" id="suitRow"></div>
 
     <div class="btn-row">
-      <button class="danger" onclick="undoLast()">撤销</button>
-      <button onclick="resetAll()">重置</button>
-      <button class="primary" onclick="calc(true)">手动重算</button>
+      <button type="button" class="danger" onclick="undoLast()">撤销</button>
+      <button type="button" onclick="resetAll()">重置</button>
+      <button type="button" class="primary" onclick="calc(true)">手动重算</button>
     </div>
   </div>
 
@@ -274,6 +320,7 @@ let hand = [];
 let board = [];
 let pendingRank = null;
 let pendingSuit = null;
+let loadedImage = null;
 
 function rankValue(r){
   return "23456789TJQKA".indexOf(r) + 2;
@@ -337,6 +384,7 @@ function renderPickers(){
 
   rankOrder.forEach(r=>{
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.className = "pick-btn";
     btn.dataset.rank = r;
     btn.textContent = r === "T" ? "10" : r;
@@ -346,6 +394,7 @@ function renderPickers(){
 
   suitOrder.forEach(s=>{
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.className = "pick-btn";
     btn.dataset.suit = s;
     btn.textContent = suitNameMap[s];
@@ -749,6 +798,90 @@ function autoCalcIfReady(){
     document.getElementById("raiseText").textContent = "待计算";
     document.getElementById("mathText").textContent = "待计算";
   }
+}
+
+const imageInput = document.getElementById("imageInput");
+const imageCanvas = document.getElementById("imageCanvas");
+const imageStatus = document.getElementById("imageStatus");
+const imageCtx = imageCanvas.getContext("2d");
+
+imageInput.addEventListener("change", handleImageFile);
+
+function handleImageFile(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    const img = new Image();
+    img.onload = function(){
+      loadedImage = img;
+      drawImageToCanvas(img);
+      imageStatus.textContent = "已导入图片：" + file.name;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function drawImageToCanvas(img){
+  const maxWidth = 900;
+  const scale = Math.min(1, maxWidth / img.width);
+
+  imageCanvas.width = Math.round(img.width * scale);
+  imageCanvas.height = Math.round(img.height * scale);
+
+  imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+  imageCtx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+  imageCanvas.style.display = "block";
+}
+
+async function captureScreen(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    imageStatus.textContent = "当前浏览器不支持截图导入";
+    return;
+  }
+
+  try{
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: false
+    });
+
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+
+    await video.play();
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = video.videoWidth;
+    tempCanvas.height = video.videoHeight;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    const img = new Image();
+    img.onload = function(){
+      loadedImage = img;
+      drawImageToCanvas(img);
+      imageStatus.textContent = "已导入截图";
+    };
+    img.src = tempCanvas.toDataURL("image/png");
+
+    stream.getTracks().forEach(track => track.stop());
+  }catch(err){
+    imageStatus.textContent = "截图失败或已取消";
+    console.error(err);
+  }
+}
+
+function clearImage(){
+  loadedImage = null;
+  imageCanvas.style.display = "none";
+  imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+  imageStatus.textContent = "还没有导入图片";
+  imageInput.value = "";
 }
 
 ["players","pot","call","stack"].forEach(id=>{
