@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>德州训练器</title>
+<style>
+body{
+  margin:0;
+  background:#0b1220;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+.wrap{
+  max-width:860px;
+  margin:0 auto;
+  padding:14px;
+}
+.panel{
+  background:#131c31;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.title{
+  font-size:24px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+.section{
+  font-size:18px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+.label{
+  font-size:13px;
+  color:#a9bad8;
+  margin-bottom:6px;
+}
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.field{
+  flex:1;
+  min-width:140px;
+}
+input,select{
+  width:100%;
+  height:42px;
+  border:none;
+  border-radius:12px;
+  background:#1a2d55;
+  color:#fff;
+  padding:0 12px;
+  font-size:16px;
+}
+.btn-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+button{
+  border:none;
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:14px;
+  font-weight:800;
+  background:#1b2947;
+  color:#fff;
+}
+button.primary{
+  background:linear-gradient(135deg,#2f7df6,#19b8a6);
+}
+button.danger{
+  background:#5a2636;
+}
+.pick-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.pick-btn{
+  min-width:46px;
+  padding:10px 12px;
+}
+.pick-btn.active{
+  outline:2px solid rgba(120,180,255,.7);
+  background:#2c4e86;
+}
+.pick-btn.red-text{
+  color:#ff9b9b;
+}
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:38px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:#182746;
+  border:1px solid #2b416c;
+  color:#dbe7ff;
+  font-size:13px;
+  font-weight:700;
+}
+.slot-grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-bottom:12px;
+}
+.slot-grid-5{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+.slot{
+  min-height:56px;
+  border:1px dashed #47689d;
+  border-radius:12px;
+  background:#0e1729;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:900;
+}
+.slot.red{ color:#ff9b9b; }
+.slot.black{ color:#f3f5ff; }
+.result{
+  font-size:52px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+.result.good{ color:#41df8d; }
+.result.mid{ color:#f3c64d; }
+.result.bad{ color:#ff7777; }
+.info-line{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid rgba(120,150,200,.18);
+  font-size:15px;
+}
+.info-line:last-child{
+  border-bottom:none;
+}
+.muted{
+  color:#a9bad8;
+}
+.small-note{
+  color:#9fb0d1;
+  font-size:13px;
+}
+@media (max-width:560px){
+  .slot-grid-5{grid-template-columns:repeat(5,1fr);gap:6px}
+  .slot{min-height:46px;font-size:18px}
+  .pick-btn{min-width:42px;padding:10px 10px}
+  .result{font-size:42px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="title">德州训练器</div>
+
+  <div class="panel">
+    <div class="section">基本设置</div>
+    <div class="row">
+      <div class="field">
+        <div class="label">人数</div>
+        <select id="players">
+          <option value="2">2人局</option>
+          <option value="3">3人局</option>
+          <option value="4" selected>4人局</option>
+          <option value="5">5人局</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="label">底池</div>
+        <input id="pot" type="number" value="100" min="0">
+      </div>
+      <div class="field">
+        <div class="label">需要补</div>
+        <input id="call" type="number" value="50" min="0">
+      </div>
+      <div class="field">
+        <div class="label">有效筹码</div>
+        <input id="stack" type="number" value="100" min="0">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button onclick="addValue('pot',50)">底池+50</button>
+      <button onclick="addValue('pot',100)">底池+100</button>
+      <button onclick="addValue('call',20)">补+20</button>
+      <button onclick="addValue('call',50)">补+50</button>
+      <button onclick="setCallByRatio(0.5)">半池</button>
+      <button onclick="setCallByRatio(1)">满池</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section">选牌</div>
+    <div class="small-note" id="stageText">当前阶段：先选两张手牌</div>
+
+    <div class="btn-row" style="margin-top:8px">
+      <span class="status-pill" id="pendingRankText">已选数字：未选</span>
+      <span class="status-pill" id="pendingSuitText">已选花色：未选</span>
+      <span class="status-pill" id="pendingCardText">待发牌：无</span>
+    </div>
+
+    <div style="margin-top:12px" class="label">① 先点数字</div>
+    <div class="pick-row" id="rankRow"></div>
+
+    <div style="margin-top:12px" class="label">② 再点花色</div>
+    <div class="pick-row" id="suitRow"></div>
+
+    <div class="btn-row">
+      <button class="danger" onclick="undoLast()">撤销</button>
+      <button onclick="resetAll()">重置</button>
+      <button class="primary" onclick="calc(true)">手动重算</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section">当前牌面</div>
+
+    <div class="label">手牌</div>
+    <div class="slot-grid-2">
+      <div class="slot" id="h0">?</div>
+      <div class="slot" id="h1">?</div>
+    </div>
+
+    <div class="label">公共牌</div>
+    <div class="slot-grid-5">
+      <div class="slot" id="b0">?</div>
+      <div class="slot" id="b1">?</div>
+      <div class="slot" id="b2">?</div>
+      <div class="slot" id="b3">?</div>
+      <div class="slot" id="b4">?</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section">结果</div>
+    <div class="result" id="equity">--.-%</div>
+    <div class="muted" id="statusText">翻牌三张后自动计算</div>
+
+    <div class="info-line"><span>门槛胜率</span><span id="threshold">--.-%</span></div>
+    <div class="info-line"><span>当前牌型</span><span id="handType">待计算</span></div>
+    <div class="info-line"><span>建议动作</span><span id="actionText">待计算</span></div>
+    <div class="info-line"><span>建议加到</span><span id="raiseText">待计算</span></div>
+    <div class="info-line"><span>数学结论</span><span id="mathText">待计算</span></div>
+  </div>
+
+</div>
+
+<script>
+const rankOrder = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const suitOrder = ["♠","♥","♦","♣"];
+const suitNameMap = {
+  "♠":"黑桃",
+  "♥":"红桃",
+  "♦":"方片",
+  "♣":"梅花"
+};
+
+let hand = [];
+let board = [];
+let pendingRank = null;
+let pendingSuit = null;
+
+function rankValue(r){
+  return "23456789TJQKA".indexOf(r) + 2;
+}
+
+function isRed(card){
+  return !!card && (card.includes("♥") || card.includes("♦"));
+}
+
+function cardText(card){
+  if(!card) return "?";
+  return card[0].replace("T","10") + card[1];
+}
+
+function pendingCardText(){
+  if(!pendingRank || !pendingSuit) return "无";
+  return suitNameMap[pendingSuit] + pendingRank.replace("T","10");
+}
+
+function stageName(){
+  if(hand.length < 2) return "先选两张手牌";
+  if(board.length < 3) return "继续输入翻牌";
+  if(board.length === 3) return "翻牌";
+  if(board.length === 4) return "转牌";
+  if(board.length === 5) return "河牌";
+  return "";
+}
+
+function updatePendingUI(){
+  document.getElementById("pendingRankText").textContent = "已选数字：" + (pendingRank ? pendingRank.replace("T","10") : "未选");
+  document.getElementById("pendingSuitText").textContent = "已选花色：" + (pendingSuit ? suitNameMap[pendingSuit] : "未选");
+  document.getElementById("pendingCardText").textContent = "待发牌：" + pendingCardText();
+
+  document.querySelectorAll("[data-rank]").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.rank === pendingRank);
+  });
+  document.querySelectorAll("[data-suit]").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.suit === pendingSuit);
+  });
+}
+
+function updateSlot(id, card){
+  const el = document.getElementById(id);
+  el.textContent = cardText(card);
+  el.className = "slot";
+  if(card) el.classList.add(isRed(card) ? "red" : "black");
+}
+
+function updateBoardUI(){
+  updateSlot("h0", hand[0]);
+  updateSlot("h1", hand[1]);
+  for(let i=0;i<5;i++) updateSlot("b"+i, board[i]);
+  document.getElementById("stageText").textContent = "当前阶段：" + stageName();
+}
+
+function renderPickers(){
+  const rankRow = document.getElementById("rankRow");
+  const suitRow = document.getElementById("suitRow");
+  rankRow.innerHTML = "";
+  suitRow.innerHTML = "";
+
+  rankOrder.forEach(r=>{
+    const btn = document.createElement("button");
+    btn.className = "pick-btn";
+    btn.dataset.rank = r;
+    btn.textContent = r === "T" ? "10" : r;
+    btn.onclick = ()=>selectRank(r);
+    rankRow.appendChild(btn);
+  });
+
+  suitOrder.forEach(s=>{
+    const btn = document.createElement("button");
+    btn.className = "pick-btn";
+    btn.dataset.suit = s;
+    btn.textContent = suitNameMap[s];
+    if(s === "♥" || s === "♦") btn.classList.add("red-text");
+    btn.onclick = ()=>selectSuit(s);
+    suitRow.appendChild(btn);
+  });
+
+  updatePendingUI();
+}
+
+function selectRank(r){
+  pendingRank = r;
+  updatePendingUI();
+  tryCommitCard();
+}
+
+function selectSuit(s){
+  pendingSuit = s;
+  updatePendingUI();
+  tryCommitCard();
+}
+
+function tryCommitCard(){
+  if(!pendingRank || !pendingSuit) return;
+
+  const card = pendingRank + pendingSuit;
+  if(hand.includes(card) || board.includes(card)){
+    document.getElementById("statusText").textContent = "这张牌已经选过了";
+    return;
+  }
+
+  if(hand.length < 2){
+    hand.push(card);
+  }else if(board.length < 5){
+    board.push(card);
+  }else{
+    return;
+  }
+
+  pendingRank = null;
+  pendingSuit = null;
+
+  updatePendingUI();
+  updateBoardUI();
+  autoCalcIfReady();
+}
+
+function undoLast(){
+  if(board.length){
+    board.pop();
+  }else if(hand.length){
+    hand.pop();
+  }
+  pendingRank = null;
+  pendingSuit = null;
+  updatePendingUI();
+  updateBoardUI();
+  autoCalcIfReady();
+}
+
+function resetAll(){
+  hand = [];
+  board = [];
+  pendingRank = null;
+  pendingSuit = null;
+
+  document.getElementById("equity").textContent = "--.-%";
+  document.getElementById("equity").className = "result";
+  document.getElementById("threshold").textContent = "--.-%";
+  document.getElementById("handType").textContent = "待计算";
+  document.getElementById("actionText").textContent = "待计算";
+  document.getElementById("raiseText").textContent = "待计算";
+  document.getElementById("mathText").textContent = "待计算";
+  document.getElementById("statusText").textContent = "翻牌三张后自动计算";
+
+  updatePendingUI();
+  updateBoardUI();
+}
+
+function addValue(id, amount){
+  const el = document.getElementById(id);
+  el.value = Number(el.value || 0) + amount;
+  autoCalcIfReady();
+}
+
+function setCallByRatio(ratio){
+  const pot = Number(document.getElementById("pot").value || 0);
+  document.getElementById("call").value = Math.round(pot * ratio);
+  autoCalcIfReady();
+}
+
+function buildDeck(excluded){
+  const deck = [];
+  const fullRanks = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"];
+  for(const r of fullRanks){
+    for(const s of suitOrder){
+      const c = r + s;
+      if(!excluded.includes(c)) deck.push(c);
+    }
+  }
+  return deck;
+}
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function getRankCounts(cards){
+  const map = {};
+  for(const c of cards){
+    const r = c[0];
+    map[r] = (map[r] || 0) + 1;
+  }
+  return map;
+}
+
+function getSuitGroups(cards){
+  const map = {};
+  for(const c of cards){
+    const s = c[1];
+    if(!map[s]) map[s] = [];
+    map[s].push(c);
+  }
+  return map;
+}
+
+function findStraight(values){
+  const uniq = [...new Set(values)].sort((a,b)=>b-a);
+  if(uniq.includes(14)) uniq.push(1);
+
+  for(let i=0;i<=uniq.length-5;i++){
+    let ok = true;
+    for(let j=0;j<4;j++){
+      if(uniq[i+j] - 1 !== uniq[i+j+1]){
+        ok = false;
+        break;
+      }
+    }
+    if(ok) return uniq[i];
+  }
+  return 0;
+}
+
+function evaluate7(cards){
+  const counts = getRankCounts(cards);
+  const entries = Object.entries(counts).map(([r,c])=>({
+    rank:r,
+    count:c,
+    value:rankValue(r)
+  }));
+
+  entries.sort((a,b)=>{
+    if(b.count !== a.count) return b.count - a.count;
+    return b.value - a.value;
+  });
+
+  const suitsMap = getSuitGroups(cards);
+  let flushCards = null;
+  for(const s in suitsMap){
+    if(suitsMap[s].length >= 5){
+      flushCards = suitsMap[s].slice().sort((a,b)=>rankValue(b[0]) - rankValue(a[0]));
+      break;
+    }
+  }
+
+  if(flushCards){
+    const sfHigh = findStraight(flushCards.map(c=>rankValue(c[0])));
+    if(sfHigh) return [8, sfHigh];
+  }
+
+  if(entries[0].count === 4){
+    const four = entries[0].value;
+    const kicker = entries.filter(e=>e.value !== four)[0].value;
+    return [7, four, kicker];
+  }
+
+  if(entries[0].count === 3){
+    const pairLike = entries.filter((e,i)=>i>0 && e.count >= 2).sort((a,b)=>b.value-a.value);
+    if(pairLike.length){
+      return [6, entries[0].value, pairLike[0].value];
+    }
+  }
+
+  if(flushCards){
+    const top5 = flushCards.slice(0,5).map(c=>rankValue(c[0]));
+    return [5, ...top5];
+  }
+
+  const straightHigh = findStraight(cards.map(c=>rankValue(c[0])));
+  if(straightHigh) return [4, straightHigh];
+
+  if(entries[0].count === 3){
+    const triple = entries[0].value;
+    const kickers = entries
+      .filter(e=>e.value !== triple)
+      .map(e=>e.value)
+      .sort((a,b)=>b-a)
+      .slice(0,2);
+    return [3, triple, ...kickers];
+  }
+
+  const pairs = entries.filter(e=>e.count === 2).map(e=>e.value).sort((a,b)=>b-a);
+  if(pairs.length >= 2){
+    const highPair = pairs[0];
+    const lowPair = pairs[1];
+    const kicker = entries
+      .filter(e=>e.value !== highPair && e.value !== lowPair)
+      .map(e=>e.value)
+      .sort((a,b)=>b-a)[0];
+    return [2, highPair, lowPair, kicker];
+  }
+
+  if(pairs.length === 1){
+    const pair = pairs[0];
+    const kickers = entries
+      .filter(e=>e.value !== pair)
+      .map(e=>e.value)
+      .sort((a,b)=>b-a)
+      .slice(0,3);
+    return [1, pair, ...kickers];
+  }
+
+  const highs = entries.map(e=>e.value).sort((a,b)=>b-a).slice(0,5);
+  return [0, ...highs];
+}
+
+function compareHands(a, b){
+  const ra = evaluate7(a);
+  const rb = evaluate7(b);
+  const len = Math.max(ra.length, rb.length);
+
+  for(let i=0;i<len;i++){
+    const va = ra[i] || 0;
+    const vb = rb[i] || 0;
+    if(va > vb) return 1;
+    if(va < vb) return -1;
+  }
+  return 0;
+}
+
+function handTypeName(value){
+  return ["高牌","一对","两对","三条","顺子","同花","葫芦","四条","同花顺"][value];
+}
+
+function analyzeHandTypeCurrent(){
+  const all = [...hand, ...board];
+  if(all.length < 5) return "牌面未满5张";
+  return handTypeName(evaluate7(all)[0]);
+}
+
+function monteCarloEquity(iterations = 3000){
+  const players = Number(document.getElementById("players").value || 2);
+  const known = [...hand, ...board];
+
+  if(hand.length < 2 || players < 2) return 0;
+
+  let total = 0;
+
+  for(let t=0;t<iterations;t++){
+    let deck = shuffle(buildDeck(known));
+    const simBoard = [...board];
+
+    while(simBoard.length < 5){
+      simBoard.push(deck.shift());
+    }
+
+    const hero7 = [...hand, ...simBoard];
+    let tieCount = 1;
+    let heroLost = false;
+
+    for(let p=1;p<players;p++){
+      const opp7 = [deck.shift(), deck.shift(), ...simBoard];
+      const cmp = compareHands(hero7, opp7);
+
+      if(cmp < 0){
+        heroLost = true;
+        break;
+      }
+      if(cmp === 0){
+        tieCount++;
+      }
+    }
+
+    if(!heroLost){
+      total += 1 / tieCount;
+    }
+  }
+
+  return total / iterations;
+}
+
+function calcSuggestion(equity, threshold){
+  const pot = Number(document.getElementById("pot").value || 0);
+  const call = Number(document.getElementById("call").value || 0);
+  const stack = Number(document.getElementById("stack").value || 0);
+  const totalAfterCall = pot + call;
+  const type = analyzeHandTypeCurrent();
+
+  let depthType = "深筹码";
+  if(stack < 30) depthType = "浅筹码";
+  else if(stack < 80) depthType = "中筹码";
+
+  let buffer = depthType === "浅筹码" ? 0.10 : 0.05;
+  let action = "弃牌";
+  let raiseTo = "不继续投入";
+
+  if(depthType === "浅筹码"){
+    if(equity >= 0.55){
+      action = "全下/继续";
+      raiseTo = "按有效筹码打";
+    }
+  }else{
+    if(equity >= threshold + 0.10){
+      if(["同花顺","四条","葫芦","同花","顺子","三条","两对"].includes(type)){
+        action = "加注";
+        raiseTo = String(Math.round(Math.max(call * 2.5, totalAfterCall * 0.55)));
+      }else if(type === "一对"){
+        action = "跟注/小加";
+        raiseTo = String(Math.round(Math.max(call * 2, totalAfterCall * 0.40)));
+      }else if(equity >= threshold + buffer){
+        action = "跟注";
+        raiseTo = "不建议大加";
+      }
+    }else if(equity >= threshold + buffer){
+      action = "跟注";
+      raiseTo = "控制投入";
+    }
+  }
+
+  return { action, raiseTo, depthType };
+}
+
+function calc(force=false){
+  if(hand.length < 2) return;
+  if(board.length < 3 && !force) return;
+
+  const pot = Number(document.getElementById("pot").value || 0);
+  const call = Number(document.getElementById("call").value || 0);
+  if([pot, call].some(v => Number.isNaN(v) || v < 0)) return;
+
+  const threshold = (pot + call) > 0 ? call / (pot + call) : 0;
+
+  let iterations = 2500;
+  if(board.length === 4) iterations = 3500;
+  if(board.length === 5) iterations = 5000;
+
+  const equity = monteCarloEquity(iterations);
+  const type = analyzeHandTypeCurrent();
+  const diff = equity - threshold;
+  const suggestion = calcSuggestion(equity, threshold);
+
+  const equityEl = document.getElementById("equity");
+  equityEl.textContent = (equity * 100).toFixed(1) + "%";
+  equityEl.className = "result " + (diff >= 0.05 ? "good" : diff >= 0 ? "mid" : "bad");
+
+  document.getElementById("threshold").textContent = (threshold * 100).toFixed(1) + "%";
+  document.getElementById("handType").textContent = type;
+  document.getElementById("actionText").textContent = suggestion.action + " | " + suggestion.depthType;
+  document.getElementById("raiseText").textContent = suggestion.raiseTo;
+
+  let math = "数学上偏负收益";
+  if(diff >= 0.08) math = "数学上明显占优";
+  else if(diff >= 0.02) math = "数学上略占优";
+  else if(diff >= -0.02) math = "数学上接近临界";
+  document.getElementById("mathText").textContent = math;
+
+  if(board.length === 3) document.getElementById("statusText").textContent = "翻牌已自动计算";
+  else if(board.length === 4) document.getElementById("statusText").textContent = "转牌已自动重算";
+  else if(board.length === 5) document.getElementById("statusText").textContent = "河牌已自动重算";
+  else document.getElementById("statusText").textContent = "已计算";
+}
+
+function autoCalcIfReady(){
+  if(hand.length < 2){
+    document.getElementById("equity").textContent = "--.-%";
+    document.getElementById("equity").className = "result";
+    document.getElementById("statusText").textContent = "先选两张手牌";
+    document.getElementById("threshold").textContent = "--.-%";
+    document.getElementById("handType").textContent = "待计算";
+    document.getElementById("actionText").textContent = "待计算";
+    document.getElementById("raiseText").textContent = "待计算";
+    document.getElementById("mathText").textContent = "待计算";
+    return;
+  }
+
+  if(board.length >= 3){
+    calc();
+  }else{
+    document.getElementById("equity").textContent = "--.-%";
+    document.getElementById("equity").className = "result";
+    document.getElementById("statusText").textContent = "翻牌三张后自动计算";
+    document.getElementById("threshold").textContent = "--.-%";
+    document.getElementById("handType").textContent = "待计算";
+    document.getElementById("actionText").textContent = "待计算";
+    document.getElementById("raiseText").textContent = "待计算";
+    document.getElementById("mathText").textContent = "待计算";
+  }
+}
+
+["players","pot","call","stack"].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener("input", autoCalcIfReady);
+  el.addEventListener("change", autoCalcIfReady);
+});
+
+renderPickers();
+updateBoardUI();
+autoCalcIfReady();
+</script>
+</body>
+</html>
