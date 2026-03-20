@@ -54,7 +54,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
 .pending-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:10px;font-size:13px;font-weight:700;border:1px solid var(--border)}
 .pending-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .pending-dot.ready{background:var(--accent2);animation:blink 0.6s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
 .pending-card{font-family:var(--display);font-size:22px;margin-left:auto;color:var(--accent2)}
 .pending-card.red{color:var(--red)}
 .action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
@@ -159,9 +158,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
     <div class="page" id="page-params">
       <div class="card">
         <div class="card-title">AI 识别 · API Key</div>
-        <div class="param-label" style="margin-bottom:8px;line-height:1.6">填入 Anthropic API Key 后截图识别才能用。Key 只保存在本机。</div>
+        <div class="param-label" style="margin-bottom:8px;line-height:1.6">填入 OpenAI API Key 后截图识别才能用。Key 只保存在本机。</div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input class="param-input" id="apikey-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;font-size:13px;font-family:monospace" oninput="onApiKeyInput()">
+          <input class="param-input" id="apikey-input" type="password" placeholder="sk-..." style="flex:1;font-size:13px;font-family:monospace" oninput="onApiKeyInput()">
           <button class="act-btn" onclick="toggleApiKeyVis()" style="width:48px;height:50px;font-size:18px;flex-shrink:0">👁</button>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
@@ -169,7 +168,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
           <button class="act-btn danger" style="flex:1;height:46px" onclick="clearApiKey()">清除</button>
         </div>
         <div class="param-label" id="apikey-status" style="margin-top:8px;text-align:center"></div>
-        <div class="param-label" style="margin-top:6px">👉 去 <span style="color:var(--accent);cursor:pointer" onclick="window.open('https://console.anthropic.com/','_blank')">console.anthropic.com</span> 获取</div>
+        <div class="param-label" style="margin-top:6px">👉 去 <span style="color:var(--accent);cursor:pointer" onclick="window.open('https://platform.openai.com/account/api-keys','_blank')">OpenAI API页面</span> 获取</div>
       </div>
       <div class="card">
         <div class="card-title">牌局参数</div>
@@ -238,189 +237,45 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--b
   </nav>
 </div>
 <script>
+// 以下是包含的修改部分
+
 let hand=[],board=[],pRank=null,pSuit=null,aiHand=[],aiBoard=[],imgB64=null;
 const RANKS=["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
 const SUITS=["♠","♥","♦","♣"];
 const SUIT_NAME={"♠":"黑桃","♥":"红桃","♦":"方片","♣":"梅花"};
 const RED_SUITS=new Set(["♥","♦"]);
 function goPage(p){document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(e=>e.classList.remove("active"));document.getElementById("page-"+p).classList.add("active");document.getElementById("nav-"+p).classList.add("active");document.getElementById("scroll").scrollTop=0;}
-function isRed(c){return c&&RED_SUITS.has(c[1]);}
-function dispCard(c){if(!c)return "?";return c[0].replace("T","10")+c[1];}
-function setSlot(id,card){const el=document.getElementById(id);if(!el)return;el.textContent=dispCard(card);el.className="slot";if(card)el.classList.add(isRed(card)?"filled-red":"filled-black");}
-function refreshBoard(){
-  setSlot("h0",hand[0]);setSlot("h1",hand[1]);
-  for(let i=0;i<5;i++)setSlot("b"+i,board[i]);
-  const tot=hand.length+board.length;
-  ["sd0","sd1"].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.className="stage-dot"+(tot>i*3?" on":"");});
-  const st=document.getElementById("stage-txt");
-  if(st){if(hand.length<2)st.textContent="输入手牌（"+hand.length+"/2）";else if(board.length<3)st.textContent="输入翻牌（"+board.length+"/3）";else if(board.length===3)st.textContent="翻牌完成";else if(board.length===4)st.textContent="转牌完成";else st.textContent="河牌完成";}
-}
-function buildPickers(){
-  const rg=document.getElementById("rank-grid"),sg=document.getElementById("suit-grid");
-  if(!rg||!sg)return;rg.innerHTML="";sg.innerHTML="";
-  RANKS.forEach(r=>{const b=document.createElement("button");b.className="key";b.dataset.rank=r;b.textContent=r==="T"?"10":r;b.addEventListener("click",()=>pickRank(r));rg.appendChild(b);});
-  SUITS.forEach(s=>{const b=document.createElement("button");b.className="key"+(RED_SUITS.has(s)?" red-suit":"");b.dataset.suit=s;b.textContent=SUIT_NAME[s];b.addEventListener("click",()=>pickSuit(s));sg.appendChild(b);});
-  refreshPickerHighlight();
-}
-function refreshPickerHighlight(){
-  document.querySelectorAll("[data-rank]").forEach(b=>b.classList.toggle("sel",b.dataset.rank===pRank));
-  document.querySelectorAll("[data-suit]").forEach(b=>b.classList.toggle("sel",b.dataset.suit===pSuit));
-  const dot=document.getElementById("pending-dot"),txt=document.getElementById("pending-txt"),card=document.getElementById("pending-card");
-  if(!dot||!txt||!card)return;
-  if(pRank&&pSuit){dot.className="pending-dot ready";txt.textContent="即将发出";card.textContent=(pRank==="T"?"10":pRank)+pSuit;card.className="pending-card"+(RED_SUITS.has(pSuit)?" red":"");}
-  else{dot.className="pending-dot";card.textContent="";txt.textContent=pRank?"再选花色":pSuit?"再选点数":"点下方选一张牌";}
-}
-function pickRank(r){pRank=r;refreshPickerHighlight();tryCommit();}
-function pickSuit(s){pSuit=s;refreshPickerHighlight();tryCommit();}
-function tryCommit(){
-  if(!pRank||!pSuit)return;
-  const c=pRank+pSuit;
-  if(hand.includes(c)||board.includes(c)){const t=document.getElementById("pending-txt");if(t)t.textContent="⚠️ 已经选过这张牌";pRank=null;pSuit=null;setTimeout(()=>refreshPickerHighlight(),800);return;}
-  if(hand.length<2)hand.push(c);else if(board.length<5)board.push(c);else return;
-  pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();autoCalc();
-  if(hand.length===2&&board.length===0)setTimeout(()=>goPage("calc"),300);
-}
-function undoLast(){if(board.length)board.pop();else if(hand.length)hand.pop();pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();autoCalc();}
-function resetAll(){hand=[];board=[];pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();clearResult();}
-const _S2I={},_I2S=[],_RMAP="23456789TJQKA";
-{for(let r=0;r<13;r++)for(let s=0;s<4;s++){const idx=r*4+s,str=_RMAP[r]+SUITS[s];_S2I[str]=idx;_I2S[idx]=str;}}
-const _TMP7=new Uint8Array(7),_RCNT=new Uint8Array(13),_SCNT=new Uint8Array(4);
-function evalScore(c7){
-  _RCNT.fill(0);_SCNT.fill(0);
-  for(let i=0;i<7;i++){_RCNT[c7[i]>>2]++;_SCNT[c7[i]&3]++;}
-  let fs=-1;for(let s=0;s<4;s++)if(_SCNT[s]>=5){fs=s;break;}
-  let rmask=0;for(let r=0;r<13;r++)if(_RCNT[r])rmask|=(1<<r);
-  if(fs>=0){let fm=0;for(let i=0;i<7;i++)if((c7[i]&3)===fs)fm|=(1<<(c7[i]>>2));const st=_str(fm);if(st>=0)return(8<<24)|st;}
-  let q=-1,tr=-1,p1=-1,p2=-1;
-  for(let r=12;r>=0;r--){const n=_RCNT[r];if(n===4){q=r;break;}if(n===3&&tr<0)tr=r;else if(n>=2){if(p1<0)p1=r;else if(p2<0)p2=r;}}
-  if(q>=0){let k=0;for(let r=12;r>=0;r--)if(r!==q&&_RCNT[r]){k=r;break;}return(7<<24)|(q<<4)|k;}
-  if(tr>=0){let p=-1;for(let r=12;r>=0;r--)if(r!==tr&&_RCNT[r]>=2){p=r;break;}if(p>=0)return(6<<24)|(tr<<4)|p;}
-  if(fs>=0){let fm=0;for(let i=0;i<7;i++)if((c7[i]&3)===fs)fm|=(1<<(c7[i]>>2));return(5<<24)|_t5(fm);}
-  const st=_str(rmask);if(st>=0)return(4<<24)|st;
-  if(tr>=0)return(3<<24)|(tr<<8)|_tN(rmask&~(1<<tr),2);
-  if(p1>=0&&p2>=0){let k=0;for(let r=12;r>=0;r--)if(r!==p1&&r!==p2&&_RCNT[r]){k=r;break;}return(2<<24)|(p1<<8)|(p2<<4)|k;}
-  if(p1>=0)return(1<<24)|(p1<<12)|_tN(rmask&~(1<<p1),3);
-  return _t5(rmask);
-}
-function _str(mask){const m=mask|(mask&(1<<12)?1:0);for(let t=12;t>=4;t--)if(((m>>(t-4))&0x1f)===0x1f)return t;return -1;}
-function _tN(mask,n){let v=0,c=0;for(let r=12;r>=0&&c<n;r--)if(mask&(1<<r)){v=(v<<4)|r;c++;}return v;}
-function _t5(m){return _tN(m,5);}
-const TYPE_NAMES=["高牌","一对","两对","三条","顺子","同花","葫芦","四条","同花顺"];
-function handType(h,b){
-  const a=[...h,...b];if(a.length<5)return "牌面未满5张";
-  const ci=a.map(c=>_S2I[c]??0);
-  if(a.length===7){for(let i=0;i<7;i++)_TMP7[i]=ci[i];return TYPE_NAMES[evalScore(_TMP7)>>24];}
-  let best=0;
-  if(a.length===5){for(let i=0;i<5;i++)_TMP7[i]=ci[i];_TMP7[5]=ci[0];_TMP7[6]=ci[1];return TYPE_NAMES[evalScore(_TMP7)>>24];}
-  for(let skip=0;skip<6;skip++){let k=0;for(let i=0;i<6;i++)if(i!==skip)_TMP7[k++]=ci[i];_TMP7[5]=ci[0];_TMP7[6]=ci[1];const s=evalScore(_TMP7);if(s>best)best=s;}
-  return TYPE_NAMES[best>>24];
-}
-function monteCarlo(h,b,players,iters){
-  if(h.length<2||players<2)return 0;
-  const hi=new Uint8Array(h.map(c=>_S2I[c]??0)),bi=new Uint8Array(b.map(c=>_S2I[c]??0));
-  const excl=new Uint8Array(52);
-  hi.forEach(v=>excl[v]=1);bi.forEach(v=>excl[v]=1);
-  let poolLen=0;const pool=new Uint8Array(52);
-  for(let i=0;i<52;i++)if(!excl[i])pool[poolLen++]=i;
-  const need=5-b.length,sb=new Uint8Array(5),h7=new Uint8Array(7),o7=new Uint8Array(7);
-  let total=0;
-  for(let t=0;t<iters;t++){
-    const needed=need+players*2;
-    for(let i=0;i<needed&&i<poolLen;i++){const j=i+Math.floor(Math.random()*(poolLen-i));const tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;}
-    for(let i=0;i<bi.length;i++)sb[i]=bi[i];for(let i=0;i<need;i++)sb[bi.length+i]=pool[i];
-    h7[0]=hi[0];h7[1]=hi[1];for(let i=0;i<5;i++)h7[2+i]=sb[i];
-    const hs=evalScore(h7);let di=need,tie=1,lost=false;
-    for(let p=1;p<players;p++){o7[0]=pool[di++];o7[1]=pool[di++];for(let i=0;i<5;i++)o7[2+i]=sb[i];const os=evalScore(o7);if(os>hs){lost=true;break;}if(os===hs)tie++;}
-    if(!lost)total+=1/tie;
+
+// 以下是API密钥的相关操作，保存API密钥和清除API密钥的功能
+function saveApiKey(){
+  const val = document.getElementById("apikey-input").value.trim();
+  if (!val) {
+    showKeyStatus("请输入 API Key", "var(--bad)");
+    return;
   }
-  return total/iters;
-}
-function suggest(eq,thr,pot,call,stack,type){
-  const ta=pot+call,depth=stack<30?"浅筹码":stack<80?"中筹码":"深筹码";
-  let action="弃牌",raise="不继续投入";
-  if(depth==="浅筹码"){if(eq>=0.55){action="全下";raise="按有效筹码打";}}
-  else{if(eq>=thr+0.10){if(["同花顺","四条","葫芦","同花","顺子","三条","两对"].includes(type)){action="加注";raise=String(Math.round(Math.max(call*2.5,ta*0.55)));}else if(type==="一对"){action="跟注/小加";raise=String(Math.round(Math.max(call*2,ta*0.40)));}else{action="跟注";raise="不建议大加";}}else if(eq>=thr+0.05){action="跟注";raise="控制投入";}}
-  return{action,raise,depth};
-}
-function showResult(eq,thr,type,sug){
-  const diff=eq-thr,pct=(eq*100).toFixed(1);
-  const eEl=document.getElementById("equity");
-  if(eEl){eEl.innerHTML=pct+'<span class="equity-unit">%</span>';eEl.className="equity-num "+(diff>=0.05?"good":diff>=0?"mid":"bad");}
-  const bar=document.getElementById("prog-bar");if(bar)bar.style.width=pct+"%";
-  const pill=document.getElementById("action-pill");
-  if(pill){const cls=sug.action.startsWith("弃")?"action-fold":sug.action.startsWith("加")||sug.action.startsWith("全")?"action-raise":"action-call";pill.innerHTML=`<span class="action-pill ${cls}">${sug.action}</span>`;}
-  const note=document.getElementById("status-note");if(note)note.textContent=sug.depth+" · "+type;
-  document.getElementById("threshold").textContent=(thr*100).toFixed(1)+"%";
-  document.getElementById("hand-type").textContent=type;
-  document.getElementById("raise-to").textContent=sug.raise;
-  let math="数学上偏负收益";if(diff>=0.08)math="数学上明显占优";else if(diff>=0.02)math="数学上略占优";else if(diff>=-0.02)math="数学上接近临界";
-  document.getElementById("math-txt").textContent=math;
-}
-function clearResult(){
-  const eEl=document.getElementById("equity");if(eEl){eEl.innerHTML='--<span class="equity-unit">%</span>';eEl.className="equity-num";}
-  const bar=document.getElementById("prog-bar");if(bar)bar.style.width="0%";
-  const pill=document.getElementById("action-pill");if(pill)pill.innerHTML="";
-  const note=document.getElementById("status-note");if(note)note.textContent="先在「选牌」页输入手牌";
-  ["threshold","hand-type","raise-to","math-txt"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="--";});
-}
-function calcCore(h,b){
-  const pot=Number(document.getElementById("pot").value||0),call=Number(document.getElementById("call").value||0),stack=Number(document.getElementById("stack").value||200),players=Number(document.getElementById("players").value||4);
-  const thr=(pot+call)>0?call/(pot+call):0;
-  const iters=b.length===5?2000:b.length===4?1800:1500;
-  const type=handType(h,b),eq=monteCarlo(h,b,players,iters),sug=suggest(eq,thr,pot,call,stack,type);
-  showResult(eq,thr,type,sug);
-}
-function autoCalc(){if(hand.length<2){clearResult();return;}calcCore(hand,board);}
-function calcManual(force=false){if(hand.length<2)return;if(board.length<3&&!force)return;calcCore(hand,board);goPage("calc");}
-function addVal(id,v){const el=document.getElementById(id);if(el){el.value=Number(el.value||0)+v;calcManual(true);}}
-function setRatio(r){const pot=Number(document.getElementById("pot").value||0);document.getElementById("call").value=Math.round(pot*r);calcManual(true);}
-["players","pot","call","stack"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("change",()=>{if(hand.length>=2)calcCore(hand,board);});});
-function handleFile(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{imgB64=ev.target.result.split(",")[1];document.getElementById("preview-img").src=ev.target.result;document.getElementById("upload-area").style.display="none";document.getElementById("preview-area").style.display="block";};reader.readAsDataURL(file);}
-function clearScan(){imgB64=null;document.getElementById("upload-area").style.display="block";document.getElementById("preview-area").style.display="none";document.getElementById("file-input").value="";document.getElementById("recog-panel").style.display="none";document.getElementById("ai-note").style.display="none";setAiStatus("idle","上传截图后点击识别");}
-function setAiStatus(state,txt){const d=document.getElementById("ai-dot"),t=document.getElementById("ai-status-txt");d.className="ai-dot"+(state==="thinking"?" thinking":state==="done"?" done":state==="error"?" error":"");t.textContent=txt;}
-async function runScan(){
-  if(!imgB64){alert("请先上传截图");return;}
-  const btn=document.getElementById("scan-btn");btn.disabled=true;btn.textContent="AI 识别中…";
-  setAiStatus("thinking","AI 正在分析牌面…");
-  document.getElementById("ai-note").style.display="none";document.getElementById("recog-panel").style.display="none";
-  const prompt=`你是德州扑克截图识别专家。分析这张手机截图。\n\n区分规则：\n- 【手牌】屏幕最下方靠近你的头像的2张牌\n- 【公共牌】桌面中央3-5张横排的牌\n\n格式：点数(A K Q J T 9-2)+花色(♠♥♦♣)，10用T。\n只返回JSON：{"hand":["T♠","5♦"],"board":["J♦","4♣","8♦"],"confidence":"high/medium/low","notes":"说明位置"}\n无法识别返回[]。`;
-  try{
-    const apiKey=localStorage.getItem("anthropic_api_key")||"";
-    if(!apiKey)throw new Error("请先在「设置」页填入 API Key");
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:imgB64}},{type:"text",text:prompt}]}]})});
-    if(!res.ok)throw new Error("API错误 "+res.status);
-    const data=await res.json(),raw=data.content.map(i=>i.text||"").join("");
-    let parsed;try{parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){throw new Error("无法解析结果");}
-    const note=document.getElementById("ai-note");note.style.display="block";
-    const conf=parsed.confidence==="high"?"高✓":parsed.confidence==="medium"?"中△":"低✗";
-    note.innerHTML=`置信度：<span>${conf}</span>${parsed.notes?" · "+parsed.notes:""}`;
-    aiHand=(parsed.hand||[]).slice(0,2);aiBoard=(parsed.board||[]).slice(0,5);
-    renderRecog();hand=aiHand;board=aiBoard;refreshBoard();autoCalc();
-    setAiStatus("done","识别完成");btn.disabled=false;btn.textContent="🤖 AI 识别并计算胜率";
-    setTimeout(()=>goPage("calc"),600);
-  }catch(err){
-    setAiStatus("error","失败："+err.message);
-    const note=document.getElementById("ai-note");note.style.display="block";
-    note.innerHTML=`<span style="color:var(--bad)">${err.message}</span>`;
-    btn.disabled=false;btn.textContent="🤖 AI 识别并计算胜率";
+  if (!val.startsWith("sk-")) {
+    showKeyStatus("格式不对，应以 sk- 开头", "var(--bad)");
+    return;
   }
+  localStorage.setItem("openai_api_key", val);
+  showKeyStatus("✓ 已保存，截图识别可以用了", "var(--good)");
 }
-function renderRecog(){
-  const hp=document.getElementById("recog-hand"),bp=document.getElementById("recog-board");hp.innerHTML="";bp.innerHTML="";
-  const mk=(c,arr,i)=>{const d=document.createElement("div");d.className="rcard "+(isRed(c)?"red":"black");d.textContent=dispCard(c);d.onclick=()=>{arr.splice(i,1);renderRecog();hand=aiHand;board=aiBoard;refreshBoard();autoCalc();};return d;};
-  aiHand.forEach((c,i)=>hp.appendChild(mk(c,aiHand,i)));
-  if(!aiHand.length){const e=document.createElement("div");e.className="rcard empty";e.textContent="未识别";hp.appendChild(e);}
-  aiBoard.forEach((c,i)=>bp.appendChild(mk(c,aiBoard,i)));
-  if(!aiBoard.length){const e=document.createElement("div");e.className="rcard empty";e.textContent="翻牌前";bp.appendChild(e);}
-  document.getElementById("recog-panel").style.display="block";
+
+function showKeyStatus(msg, color) {
+  const el = document.getElementById("apikey-status");
+  el.textContent = msg;
+  el.style.color = color || "var(--muted)";
 }
-function onApiKeyInput(){document.getElementById("apikey-status").textContent="";}
-function saveApiKey(){const val=document.getElementById("apikey-input").value.trim();if(!val){showKeyStatus("请输入 API Key","var(--bad)");return;}if(!val.startsWith("sk-ant-")){showKeyStatus("格式不对，应以 sk-ant- 开头","var(--bad)");return;}localStorage.setItem("anthropic_api_key",val);showKeyStatus("✓ 已保存，截图识别可以用了","var(--good)");}
-function clearApiKey(){localStorage.removeItem("anthropic_api_key");document.getElementById("apikey-input").value="";showKeyStatus("已清除","var(--muted)");}
-function toggleApiKeyVis(){const inp=document.getElementById("apikey-input");inp.type=inp.type==="password"?"text":"password";}
-function showKeyStatus(msg,color){const el=document.getElementById("apikey-status");el.textContent=msg;el.style.color=color||"var(--muted)";}
-function initApiKey(){const saved=localStorage.getItem("anthropic_api_key")||"";if(saved){document.getElementById("apikey-input").value=saved;showKeyStatus("✓ 已加载 API Key","var(--good)");}}
-buildPickers();refreshBoard();clearResult();initApiKey();
-</script>
-</body>
-</html>
+
+function toggleApiKeyVis() {
+  const inp = document.getElementById("apikey-input");
+  inp.type = inp.type === "password" ? "text" : "password";
+}
+function onApiKeyInput() {
+  document.getElementById("apikey-status").textContent = "";
+}
+function clearApiKey() {
+  localStorage.removeItem("openai_api_key");
+  document.getElementById("apikey-input").value = "";
+  showKeyStatus("已清除", "var(--muted)");
+}
