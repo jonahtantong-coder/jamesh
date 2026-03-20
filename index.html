@@ -1,898 +1,426 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>德州训练器</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>德州助手</title>
 <style>
-body{
-  margin:0;
-  background:#0b1220;
-  color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-}
-*{box-sizing:border-box}
-.wrap{
-  max-width:860px;
-  margin:0 auto;
-  padding:14px;
-}
-.panel{
-  background:#131c31;
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:14px;
-}
-.title{
-  font-size:24px;
-  font-weight:900;
-  margin-bottom:12px;
-}
-.section{
-  font-size:18px;
-  font-weight:800;
-  margin-bottom:10px;
-}
-.label{
-  font-size:13px;
-  color:#a9bad8;
-  margin-bottom:6px;
-}
-.row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-.field{
-  flex:1;
-  min-width:140px;
-}
-input,select{
-  width:100%;
-  height:42px;
-  border:none;
-  border-radius:12px;
-  background:#1a2d55;
-  color:#fff;
-  padding:0 12px;
-  font-size:16px;
-}
-.btn-row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-button{
-  border:none;
-  border-radius:12px;
-  padding:10px 14px;
-  font-size:14px;
-  font-weight:800;
-  background:#1b2947;
-  color:#fff;
-  cursor:pointer;
-}
-button.primary{
-  background:linear-gradient(135deg,#2f7df6,#19b8a6);
-}
-button.danger{
-  background:#5a2636;
-}
-.pick-row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.pick-btn{
-  min-width:46px;
-  padding:10px 12px;
-}
-.pick-btn.active{
-  outline:2px solid rgba(120,180,255,.7);
-  background:#2c4e86;
-}
-.pick-btn.red-text{
-  color:#ff9b9b;
-}
-.status-pill{
-  display:inline-flex;
-  align-items:center;
-  min-height:38px;
-  padding:8px 12px;
-  border-radius:999px;
-  background:#182746;
-  border:1px solid #2b416c;
-  color:#dbe7ff;
-  font-size:13px;
-  font-weight:700;
-}
-.slot-grid-2{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  margin-bottom:12px;
-}
-.slot-grid-5{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:10px;
-}
-.slot{
-  min-height:56px;
-  border:1px dashed #47689d;
-  border-radius:12px;
-  background:#0e1729;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  font-weight:900;
-}
-.slot.red{ color:#ff9b9b; }
-.slot.black{ color:#f3f5ff; }
-.result{
-  font-size:52px;
-  font-weight:900;
-  margin-bottom:8px;
-}
-.result.good{ color:#41df8d; }
-.result.mid{ color:#f3c64d; }
-.result.bad{ color:#ff7777; }
-.info-line{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 0;
-  border-bottom:1px solid rgba(120,150,200,.18);
-  font-size:15px;
-}
-.info-line:last-child{
-  border-bottom:none;
-}
-.muted{
-  color:#a9bad8;
-}
-.small-note{
-  color:#9fb0d1;
-  font-size:13px;
-}
-.image-tools{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:10px;
-}
-.fake-file-btn{
-  display:inline-flex;
-}
-.fake-file-btn button{
-  pointer-events:none;
-}
-.canvas-wrap{
-  margin-top:12px;
-}
-#imageCanvas{
-  width:100%;
-  max-height:420px;
-  background:#0e1729;
-  border:1px dashed #47689d;
-  border-radius:12px;
-  display:none;
-}
-@media (max-width:560px){
-  .slot-grid-5{grid-template-columns:repeat(5,1fr);gap:6px}
-  .slot{min-height:46px;font-size:18px}
-  .pick-btn{min-width:42px;padding:10px 10px}
-  .result{font-size:42px}
-}
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Noto+Sans+SC:wght@400;700;900&display=swap');
+:root{--bg:#07101f;--surface:#0e1c30;--surface2:#152540;--border:rgba(60,120,220,0.18);--accent:#3d8bff;--accent2:#00d4aa;--text:#e8f0ff;--muted:#5a7099;--good:#1fd87c;--mid:#f5c133;--bad:#ff4f4f;--red:#ff7070;--touch:56px;--r:16px;--display:'Oswald',sans-serif;--body:'Noto Sans SC',sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;overscroll-behavior:none}
+.app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+.topbar{display:flex;align-items:center;padding:12px 16px 8px;gap:10px;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border)}
+.topbar-title{font-family:var(--display);font-size:20px;letter-spacing:1px;color:var(--text);flex:1}
+.topbar-badge{font-size:10px;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;padding:3px 9px;border-radius:999px;letter-spacing:0.06em}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 8px;-webkit-overflow-scrolling:touch}
+.bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:60px;border:none;background:transparent;color:var(--muted);font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;transition:color 0.15s;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-btn .icon{font-size:22px;line-height:1}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.active .icon{filter:drop-shadow(0 0 6px rgba(61,139,255,0.5))}
+.page{display:none}.page.active{display:block}
+.card{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:10px;border:1px solid var(--border)}
+.card-title{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;font-family:var(--body)}
+.result-hero{background:var(--surface);border-radius:var(--r);padding:18px 16px 14px;margin-bottom:10px;border:1px solid var(--border);text-align:center}
+.equity-num{font-family:var(--display);font-size:72px;line-height:1;letter-spacing:-1px;transition:color 0.3s;color:var(--muted)}
+.equity-num.good{color:var(--good)}.equity-num.mid{color:var(--mid)}.equity-num.bad{color:var(--bad)}
+.equity-unit{font-size:36px}
+.prog-wrap{height:8px;background:var(--surface2);border-radius:4px;margin:10px 0 14px;overflow:hidden}
+.prog-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--bad) 0%,var(--mid) 50%,var(--good) 100%);width:0%;transition:width 0.7s cubic-bezier(0.34,1.56,0.64,1)}
+.action-pill{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:999px;font-size:18px;font-weight:900;font-family:var(--display);letter-spacing:0.06em;margin-bottom:6px}
+.action-fold{background:rgba(255,79,79,0.12);border:1.5px solid rgba(255,79,79,0.4);color:var(--bad)}
+.action-call{background:rgba(245,193,51,0.12);border:1.5px solid rgba(245,193,51,0.4);color:var(--mid)}
+.action-raise{background:rgba(31,216,124,0.12);border:1.5px solid rgba(31,216,124,0.4);color:var(--good)}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(60,120,220,0.1);font-size:14px}
+.stat-row:last-child{border-bottom:none}.stat-val{font-weight:700;font-size:15px}
+.board-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.hand-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.community-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.slot{height:64px;border:1.5px dashed rgba(60,120,220,0.3);border-radius:12px;background:rgba(14,28,48,0.8);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:24px;font-weight:700;color:var(--muted);transition:all 0.15s}
+.community-row .slot{height:52px;font-size:18px}
+.slot.filled-red{color:var(--red);border-color:rgba(255,112,112,0.4);background:rgba(255,112,112,0.06)}
+.slot.filled-black{color:var(--text);border-color:rgba(60,120,220,0.4);background:rgba(61,139,255,0.06)}
+.pick-section{margin-bottom:10px}
+.pick-label{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.rank-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:8px}
+.suit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.key{height:var(--touch);border:1.5px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-family:var(--body);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.12s;user-select:none;-webkit-user-select:none}
+.key:active{transform:scale(0.92)}
+.key.sel{background:rgba(61,139,255,0.2);border-color:var(--accent);color:var(--accent)}
+.key.red-suit{color:var(--red)}.key.red-suit.sel{color:var(--red);border-color:var(--red);background:rgba(255,112,112,0.12)}
+.pending-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border-radius:12px;margin-bottom:10px;font-size:13px;font-weight:700;border:1px solid var(--border)}
+.pending-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.pending-dot.ready{background:var(--accent2);animation:blink 0.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.pending-card{font-family:var(--display);font-size:22px;margin-left:auto;color:var(--accent2)}
+.pending-card.red{color:var(--red)}
+.action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.act-btn{height:50px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:var(--body);font-size:14px;font-weight:700;cursor:pointer;transition:all 0.12s}
+.act-btn:active{transform:scale(0.96)}
+.act-btn.primary{background:linear-gradient(135deg,var(--accent),#1a70e0);border-color:transparent}
+.act-btn.danger{color:var(--bad);border-color:rgba(255,79,79,0.25);background:rgba(255,79,79,0.08)}
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.param-item{display:flex;flex-direction:column;gap:5px}
+.param-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.param-input{height:50px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:18px;font-family:var(--display);font-weight:600;padding:0 14px;outline:none;-webkit-appearance:none;transition:border-color 0.15s}
+.param-input:focus{border-color:var(--accent)}
+.quick-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.qbtn{height:44px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--body);transition:all 0.12s}
+.qbtn:active{color:var(--text);border-color:var(--accent)}
+.upload-zone{border:2px dashed rgba(61,139,255,0.35);border-radius:20px;padding:36px 20px;text-align:center;background:rgba(61,139,255,0.04);position:relative;transition:all 0.2s;cursor:pointer;margin-bottom:10px}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.upload-icon-big{font-size:48px;margin-bottom:10px;display:block}
+.upload-main{font-size:18px;font-weight:900;margin-bottom:4px}
+.upload-sub{font-size:13px;color:var(--muted)}
+.preview-box{position:relative;border-radius:16px;overflow:hidden;margin-bottom:10px;border:1px solid var(--border);background:#040c18}
+.preview-box img{width:100%;display:block;max-height:260px;object-fit:contain}
+.preview-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid var(--border);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ai-status-bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);margin-bottom:10px;font-size:14px;font-weight:700}
+.ai-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.ai-dot.thinking{background:var(--accent);animation:blink 0.7s ease-in-out infinite}
+.ai-dot.done{background:var(--good)}.ai-dot.error{background:var(--bad)}
+.scan-btn{width:100%;height:60px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;font-weight:900;font-family:var(--body);cursor:pointer;margin-bottom:10px;letter-spacing:0.04em;transition:opacity 0.15s}
+.scan-btn:active{opacity:0.85}.scan-btn:disabled{opacity:0.4;cursor:not-allowed}
+.recog-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.rcard{min-width:52px;height:58px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);font-family:var(--display);font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.12s;padding:0 8px}
+.rcard:active{transform:scale(0.93)}
+.rcard.red{color:var(--red);border-color:rgba(255,112,112,0.4)}
+.rcard.black{color:var(--text);border-color:rgba(61,139,255,0.35)}
+.rcard.empty{color:var(--muted);font-size:14px;font-family:var(--body)}
+.ai-note{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:10px;padding:10px 12px;margin-bottom:10px;line-height:1.6;border:1px solid var(--border)}
+.ai-note span{color:var(--accent2);font-weight:700}
+.stage-bar{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:10px}
+.stage-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.stage-dot.on{background:var(--accent2)}
+.info-note{font-size:12px;color:var(--muted);text-align:center;padding:8px 0}
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <div class="title">德州训练器</div>
-
-  <div class="panel">
-    <div class="section">基本设置</div>
-    <div class="row">
-      <div class="field">
-        <div class="label">人数</div>
-        <select id="players">
-          <option value="2">2人局</option>
-          <option value="3">3人局</option>
-          <option value="4" selected>4人局</option>
-          <option value="5">5人局</option>
-        </select>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-title">🂠 德州助手</div>
+    <span class="topbar-badge">朋友局版</span>
+  </div>
+  <div class="scroll" id="scroll">
+    <div class="page active" id="page-calc">
+      <div class="result-hero">
+        <div class="equity-num" id="equity">--<span class="equity-unit">%</span></div>
+        <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+        <div id="action-pill"></div>
+        <div class="info-note" id="status-note">先在「选牌」页输入手牌</div>
       </div>
-      <div class="field">
-        <div class="label">底池</div>
-        <input id="pot" type="number" value="100" min="0">
+      <div class="card board-wrap">
+        <div class="card-title">当前牌面</div>
+        <div class="board-label">手牌</div>
+        <div class="hand-row">
+          <div class="slot" id="h0">?</div>
+          <div class="slot" id="h1">?</div>
+        </div>
+        <div class="board-label">公共牌</div>
+        <div class="community-row">
+          <div class="slot" id="b0">?</div><div class="slot" id="b1">?</div>
+          <div class="slot" id="b2">?</div><div class="slot" id="b3">?</div>
+          <div class="slot" id="b4">?</div>
+        </div>
       </div>
-      <div class="field">
-        <div class="label">需要补</div>
-        <input id="call" type="number" value="50" min="0">
-      </div>
-      <div class="field">
-        <div class="label">有效筹码</div>
-        <input id="stack" type="number" value="100" min="0">
+      <div class="card">
+        <div class="stat-row"><span class="muted">门槛胜率</span><span class="stat-val" id="threshold">--</span></div>
+        <div class="stat-row"><span class="muted">当前牌型</span><span class="stat-val" id="hand-type">待计算</span></div>
+        <div class="stat-row"><span class="muted">建议加到</span><span class="stat-val" id="raise-to">--</span></div>
+        <div class="stat-row"><span class="muted">数学结论</span><span class="stat-val" id="math-txt">--</span></div>
       </div>
     </div>
-    <div class="btn-row">
-      <button type="button" onclick="addValue('pot',50)">底池+50</button>
-      <button type="button" onclick="addValue('pot',100)">底池+100</button>
-      <button type="button" onclick="addValue('call',20)">补+20</button>
-      <button type="button" onclick="addValue('call',50)">补+50</button>
-      <button type="button" onclick="setCallByRatio(0.5)">半池</button>
-      <button type="button" onclick="setCallByRatio(1)">满池</button>
+    <div class="page" id="page-pick">
+      <div class="pending-bar" id="pending-bar">
+        <div class="pending-dot" id="pending-dot"></div>
+        <span id="pending-txt">点下方选一张牌</span>
+        <span class="pending-card" id="pending-card"></span>
+      </div>
+      <div class="stage-bar">
+        <div class="stage-dot" id="sd0"></div>
+        <div class="stage-dot" id="sd1"></div>
+        <span id="stage-txt" style="margin-left:2px">手牌阶段</span>
+      </div>
+      <div class="card pick-section">
+        <div class="pick-label">① 选点数</div>
+        <div class="rank-grid" id="rank-grid"></div>
+        <div class="pick-label" style="margin-top:10px">② 选花色</div>
+        <div class="suit-grid" id="suit-grid"></div>
+      </div>
+      <div class="action-row">
+        <button class="act-btn danger" onclick="undoLast()">↩ 撤销</button>
+        <button class="act-btn" onclick="resetAll()">重置</button>
+        <button class="act-btn primary" onclick="calcManual(true)">重算</button>
+      </div>
+    </div>
+    <div class="page" id="page-params">
+      <div class="card">
+        <div class="card-title">AI 识别 · API Key</div>
+        <div class="param-label" style="margin-bottom:8px;line-height:1.6">填入 Anthropic API Key 后截图识别才能用。Key 只保存在本机。</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="param-input" id="apikey-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;font-size:13px;font-family:monospace" oninput="onApiKeyInput()">
+          <button class="act-btn" onclick="toggleApiKeyVis()" style="width:48px;height:50px;font-size:18px;flex-shrink:0">👁</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="act-btn primary" style="flex:1;height:46px" onclick="saveApiKey()">保存</button>
+          <button class="act-btn danger" style="flex:1;height:46px" onclick="clearApiKey()">清除</button>
+        </div>
+        <div class="param-label" id="apikey-status" style="margin-top:8px;text-align:center"></div>
+        <div class="param-label" style="margin-top:6px">👉 去 <span style="color:var(--accent);cursor:pointer" onclick="window.open('https://console.anthropic.com/','_blank')">console.anthropic.com</span> 获取</div>
+      </div>
+      <div class="card">
+        <div class="card-title">牌局参数</div>
+        <div class="param-grid">
+          <div class="param-item"><div class="param-label">人数</div>
+            <select class="param-input" id="players">
+              <option value="2">2人</option><option value="3">3人</option>
+              <option value="4" selected>4人</option><option value="5">5人</option>
+              <option value="6">6人</option><option value="9">9人</option>
+            </select>
+          </div>
+          <div class="param-item"><div class="param-label">筹码深度</div><input class="param-input" id="stack" type="number" value="200" min="0" inputmode="numeric"></div>
+          <div class="param-item"><div class="param-label">当前底池</div><input class="param-input" id="pot" type="number" value="100" min="0" inputmode="numeric"></div>
+          <div class="param-item"><div class="param-label">需要补</div><input class="param-input" id="call" type="number" value="50" min="0" inputmode="numeric"></div>
+        </div>
+        <div class="card-title" style="margin-top:4px">底池快捷</div>
+        <div class="quick-btns">
+          <button class="qbtn" onclick="addVal('pot',50)">底池+50</button>
+          <button class="qbtn" onclick="addVal('pot',100)">底池+100</button>
+          <button class="qbtn" onclick="addVal('pot',200)">底池+200</button>
+          <button class="qbtn" onclick="addVal('call',20)">补+20</button>
+          <button class="qbtn" onclick="addVal('call',50)">补+50</button>
+          <button class="qbtn" onclick="setRatio(1)">满池押注</button>
+        </div>
+        <button class="act-btn primary" style="width:100%;height:52px;font-size:16px" onclick="calcManual(true)">立即重新计算</button>
+      </div>
+    </div>
+    <div class="page" id="page-scan">
+      <div id="upload-area">
+        <div class="upload-zone">
+          <input type="file" accept="image/*" id="file-input" onchange="handleFile(event)">
+          <span class="upload-icon-big">📸</span>
+          <div class="upload-main">上传牌桌截图</div>
+          <div class="upload-sub">AI 自动识别手牌 + 公共牌</div>
+        </div>
+      </div>
+      <div id="preview-area" style="display:none">
+        <div class="preview-box">
+          <img id="preview-img" src="" alt="">
+          <button class="preview-close" onclick="clearScan()">✕</button>
+        </div>
+        <button class="scan-btn" id="scan-btn" onclick="runScan()">🤖 AI 识别并计算胜率</button>
+      </div>
+      <div class="ai-status-bar">
+        <div class="ai-dot" id="ai-dot"></div>
+        <span id="ai-status-txt">上传截图后点击识别</span>
+      </div>
+      <div class="ai-note" id="ai-note" style="display:none"></div>
+      <div id="recog-panel" style="display:none">
+        <div class="card">
+          <div class="card-title">识别结果</div>
+          <div class="board-label">手牌</div>
+          <div class="recog-row" id="recog-hand"></div>
+          <div class="board-label" style="margin-top:8px">公共牌</div>
+          <div class="recog-row" id="recog-board"></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px">点击牌可删除 · 参数在「设置」页调整</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="panel">
-    <div class="section">图片输入</div>
-
-    <div class="image-tools">
-      <label for="imageInput" class="fake-file-btn">
-        <button type="button">上传图片 / 拍照</button>
-      </label>
-      <input id="imageInput" type="file" accept="image/*" capture="environment" style="display:none;">
-
-      <button type="button" onclick="captureScreen()">截图导入</button>
-      <button type="button" class="danger" onclick="clearImage()">清空图片</button>
-    </div>
-
-    <div class="small-note" id="imageStatus" style="margin-top:10px;">
-      还没有导入图片
-    </div>
-
-    <div class="canvas-wrap">
-      <canvas id="imageCanvas"></canvas>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="section">选牌</div>
-    <div class="small-note" id="stageText">当前阶段：先选两张手牌</div>
-
-    <div class="btn-row" style="margin-top:8px">
-      <span class="status-pill" id="pendingRankText">已选数字：未选</span>
-      <span class="status-pill" id="pendingSuitText">已选花色：未选</span>
-      <span class="status-pill" id="pendingCardText">待发牌：无</span>
-    </div>
-
-    <div style="margin-top:12px" class="label">① 先点数字</div>
-    <div class="pick-row" id="rankRow"></div>
-
-    <div style="margin-top:12px" class="label">② 再点花色</div>
-    <div class="pick-row" id="suitRow"></div>
-
-    <div class="btn-row">
-      <button type="button" class="danger" onclick="undoLast()">撤销</button>
-      <button type="button" onclick="resetAll()">重置</button>
-      <button type="button" class="primary" onclick="calc(true)">手动重算</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="section">当前牌面</div>
-
-    <div class="label">手牌</div>
-    <div class="slot-grid-2">
-      <div class="slot" id="h0">?</div>
-      <div class="slot" id="h1">?</div>
-    </div>
-
-    <div class="label">公共牌</div>
-    <div class="slot-grid-5">
-      <div class="slot" id="b0">?</div>
-      <div class="slot" id="b1">?</div>
-      <div class="slot" id="b2">?</div>
-      <div class="slot" id="b3">?</div>
-      <div class="slot" id="b4">?</div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="section">结果</div>
-    <div class="result" id="equity">--.-%</div>
-    <div class="muted" id="statusText">翻牌三张后自动计算</div>
-
-    <div class="info-line"><span>门槛胜率</span><span id="threshold">--.-%</span></div>
-    <div class="info-line"><span>当前牌型</span><span id="handType">待计算</span></div>
-    <div class="info-line"><span>建议动作</span><span id="actionText">待计算</span></div>
-    <div class="info-line"><span>建议加到</span><span id="raiseText">待计算</span></div>
-    <div class="info-line"><span>数学结论</span><span id="mathText">待计算</span></div>
-  </div>
-
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-calc" onclick="goPage('calc')"><span class="icon">📊</span>分析</button>
+    <button class="nav-btn" id="nav-pick" onclick="goPage('pick')"><span class="icon">🃏</span>选牌</button>
+    <button class="nav-btn" id="nav-scan" onclick="goPage('scan')"><span class="icon">📷</span>截图</button>
+    <button class="nav-btn" id="nav-params" onclick="goPage('params')"><span class="icon">⚙️</span>设置</button>
+  </nav>
 </div>
-
 <script>
-const rankOrder = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
-const suitOrder = ["♠","♥","♦","♣"];
-const suitNameMap = {
-  "♠":"黑桃",
-  "♥":"红桃",
-  "♦":"方片",
-  "♣":"梅花"
-};
-
-let hand = [];
-let board = [];
-let pendingRank = null;
-let pendingSuit = null;
-let loadedImage = null;
-
-function rankValue(r){
-  return "23456789TJQKA".indexOf(r) + 2;
+let hand=[],board=[],pRank=null,pSuit=null,aiHand=[],aiBoard=[],imgB64=null;
+const RANKS=["A","K","Q","J","T","9","8","7","6","5","4","3","2"];
+const SUITS=["♠","♥","♦","♣"];
+const SUIT_NAME={"♠":"黑桃","♥":"红桃","♦":"方片","♣":"梅花"};
+const RED_SUITS=new Set(["♥","♦"]);
+function goPage(p){document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(e=>e.classList.remove("active"));document.getElementById("page-"+p).classList.add("active");document.getElementById("nav-"+p).classList.add("active");document.getElementById("scroll").scrollTop=0;}
+function isRed(c){return c&&RED_SUITS.has(c[1]);}
+function dispCard(c){if(!c)return "?";return c[0].replace("T","10")+c[1];}
+function setSlot(id,card){const el=document.getElementById(id);if(!el)return;el.textContent=dispCard(card);el.className="slot";if(card)el.classList.add(isRed(card)?"filled-red":"filled-black");}
+function refreshBoard(){
+  setSlot("h0",hand[0]);setSlot("h1",hand[1]);
+  for(let i=0;i<5;i++)setSlot("b"+i,board[i]);
+  const tot=hand.length+board.length;
+  ["sd0","sd1"].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.className="stage-dot"+(tot>i*3?" on":"");});
+  const st=document.getElementById("stage-txt");
+  if(st){if(hand.length<2)st.textContent="输入手牌（"+hand.length+"/2）";else if(board.length<3)st.textContent="输入翻牌（"+board.length+"/3）";else if(board.length===3)st.textContent="翻牌完成";else if(board.length===4)st.textContent="转牌完成";else st.textContent="河牌完成";}
 }
-
-function isRed(card){
-  return !!card && (card.includes("♥") || card.includes("♦"));
+function buildPickers(){
+  const rg=document.getElementById("rank-grid"),sg=document.getElementById("suit-grid");
+  if(!rg||!sg)return;rg.innerHTML="";sg.innerHTML="";
+  RANKS.forEach(r=>{const b=document.createElement("button");b.className="key";b.dataset.rank=r;b.textContent=r==="T"?"10":r;b.addEventListener("click",()=>pickRank(r));rg.appendChild(b);});
+  SUITS.forEach(s=>{const b=document.createElement("button");b.className="key"+(RED_SUITS.has(s)?" red-suit":"");b.dataset.suit=s;b.textContent=SUIT_NAME[s];b.addEventListener("click",()=>pickSuit(s));sg.appendChild(b);});
+  refreshPickerHighlight();
 }
-
-function cardText(card){
-  if(!card) return "?";
-  return card[0].replace("T","10") + card[1];
+function refreshPickerHighlight(){
+  document.querySelectorAll("[data-rank]").forEach(b=>b.classList.toggle("sel",b.dataset.rank===pRank));
+  document.querySelectorAll("[data-suit]").forEach(b=>b.classList.toggle("sel",b.dataset.suit===pSuit));
+  const dot=document.getElementById("pending-dot"),txt=document.getElementById("pending-txt"),card=document.getElementById("pending-card");
+  if(!dot||!txt||!card)return;
+  if(pRank&&pSuit){dot.className="pending-dot ready";txt.textContent="即将发出";card.textContent=(pRank==="T"?"10":pRank)+pSuit;card.className="pending-card"+(RED_SUITS.has(pSuit)?" red":"");}
+  else{dot.className="pending-dot";card.textContent="";txt.textContent=pRank?"再选花色":pSuit?"再选点数":"点下方选一张牌";}
 }
-
-function pendingCardText(){
-  if(!pendingRank || !pendingSuit) return "无";
-  return suitNameMap[pendingSuit] + pendingRank.replace("T","10");
+function pickRank(r){pRank=r;refreshPickerHighlight();tryCommit();}
+function pickSuit(s){pSuit=s;refreshPickerHighlight();tryCommit();}
+function tryCommit(){
+  if(!pRank||!pSuit)return;
+  const c=pRank+pSuit;
+  if(hand.includes(c)||board.includes(c)){const t=document.getElementById("pending-txt");if(t)t.textContent="⚠️ 已经选过这张牌";pRank=null;pSuit=null;setTimeout(()=>refreshPickerHighlight(),800);return;}
+  if(hand.length<2)hand.push(c);else if(board.length<5)board.push(c);else return;
+  pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();autoCalc();
+  if(hand.length===2&&board.length===0)setTimeout(()=>goPage("calc"),300);
 }
-
-function stageName(){
-  if(hand.length < 2) return "先选两张手牌";
-  if(board.length < 3) return "继续输入翻牌";
-  if(board.length === 3) return "翻牌";
-  if(board.length === 4) return "转牌";
-  if(board.length === 5) return "河牌";
-  return "";
+function undoLast(){if(board.length)board.pop();else if(hand.length)hand.pop();pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();autoCalc();}
+function resetAll(){hand=[];board=[];pRank=null;pSuit=null;refreshPickerHighlight();refreshBoard();clearResult();}
+const _S2I={},_I2S=[],_RMAP="23456789TJQKA";
+{for(let r=0;r<13;r++)for(let s=0;s<4;s++){const idx=r*4+s,str=_RMAP[r]+SUITS[s];_S2I[str]=idx;_I2S[idx]=str;}}
+const _TMP7=new Uint8Array(7),_RCNT=new Uint8Array(13),_SCNT=new Uint8Array(4);
+function evalScore(c7){
+  _RCNT.fill(0);_SCNT.fill(0);
+  for(let i=0;i<7;i++){_RCNT[c7[i]>>2]++;_SCNT[c7[i]&3]++;}
+  let fs=-1;for(let s=0;s<4;s++)if(_SCNT[s]>=5){fs=s;break;}
+  let rmask=0;for(let r=0;r<13;r++)if(_RCNT[r])rmask|=(1<<r);
+  if(fs>=0){let fm=0;for(let i=0;i<7;i++)if((c7[i]&3)===fs)fm|=(1<<(c7[i]>>2));const st=_str(fm);if(st>=0)return(8<<24)|st;}
+  let q=-1,tr=-1,p1=-1,p2=-1;
+  for(let r=12;r>=0;r--){const n=_RCNT[r];if(n===4){q=r;break;}if(n===3&&tr<0)tr=r;else if(n>=2){if(p1<0)p1=r;else if(p2<0)p2=r;}}
+  if(q>=0){let k=0;for(let r=12;r>=0;r--)if(r!==q&&_RCNT[r]){k=r;break;}return(7<<24)|(q<<4)|k;}
+  if(tr>=0){let p=-1;for(let r=12;r>=0;r--)if(r!==tr&&_RCNT[r]>=2){p=r;break;}if(p>=0)return(6<<24)|(tr<<4)|p;}
+  if(fs>=0){let fm=0;for(let i=0;i<7;i++)if((c7[i]&3)===fs)fm|=(1<<(c7[i]>>2));return(5<<24)|_t5(fm);}
+  const st=_str(rmask);if(st>=0)return(4<<24)|st;
+  if(tr>=0)return(3<<24)|(tr<<8)|_tN(rmask&~(1<<tr),2);
+  if(p1>=0&&p2>=0){let k=0;for(let r=12;r>=0;r--)if(r!==p1&&r!==p2&&_RCNT[r]){k=r;break;}return(2<<24)|(p1<<8)|(p2<<4)|k;}
+  if(p1>=0)return(1<<24)|(p1<<12)|_tN(rmask&~(1<<p1),3);
+  return _t5(rmask);
 }
-
-function updatePendingUI(){
-  document.getElementById("pendingRankText").textContent = "已选数字：" + (pendingRank ? pendingRank.replace("T","10") : "未选");
-  document.getElementById("pendingSuitText").textContent = "已选花色：" + (pendingSuit ? suitNameMap[pendingSuit] : "未选");
-  document.getElementById("pendingCardText").textContent = "待发牌：" + pendingCardText();
-
-  document.querySelectorAll("[data-rank]").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.rank === pendingRank);
-  });
-  document.querySelectorAll("[data-suit]").forEach(btn=>{
-    btn.classList.toggle("active", btn.dataset.suit === pendingSuit);
-  });
+function _str(mask){const m=mask|(mask&(1<<12)?1:0);for(let t=12;t>=4;t--)if(((m>>(t-4))&0x1f)===0x1f)return t;return -1;}
+function _tN(mask,n){let v=0,c=0;for(let r=12;r>=0&&c<n;r--)if(mask&(1<<r)){v=(v<<4)|r;c++;}return v;}
+function _t5(m){return _tN(m,5);}
+const TYPE_NAMES=["高牌","一对","两对","三条","顺子","同花","葫芦","四条","同花顺"];
+function handType(h,b){
+  const a=[...h,...b];if(a.length<5)return "牌面未满5张";
+  const ci=a.map(c=>_S2I[c]??0);
+  if(a.length===7){for(let i=0;i<7;i++)_TMP7[i]=ci[i];return TYPE_NAMES[evalScore(_TMP7)>>24];}
+  let best=0;
+  if(a.length===5){for(let i=0;i<5;i++)_TMP7[i]=ci[i];_TMP7[5]=ci[0];_TMP7[6]=ci[1];return TYPE_NAMES[evalScore(_TMP7)>>24];}
+  for(let skip=0;skip<6;skip++){let k=0;for(let i=0;i<6;i++)if(i!==skip)_TMP7[k++]=ci[i];_TMP7[5]=ci[0];_TMP7[6]=ci[1];const s=evalScore(_TMP7);if(s>best)best=s;}
+  return TYPE_NAMES[best>>24];
 }
-
-function updateSlot(id, card){
-  const el = document.getElementById(id);
-  el.textContent = cardText(card);
-  el.className = "slot";
-  if(card) el.classList.add(isRed(card) ? "red" : "black");
-}
-
-function updateBoardUI(){
-  updateSlot("h0", hand[0]);
-  updateSlot("h1", hand[1]);
-  for(let i=0;i<5;i++) updateSlot("b"+i, board[i]);
-  document.getElementById("stageText").textContent = "当前阶段：" + stageName();
-}
-
-function renderPickers(){
-  const rankRow = document.getElementById("rankRow");
-  const suitRow = document.getElementById("suitRow");
-  rankRow.innerHTML = "";
-  suitRow.innerHTML = "";
-
-  rankOrder.forEach(r=>{
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "pick-btn";
-    btn.dataset.rank = r;
-    btn.textContent = r === "T" ? "10" : r;
-    btn.onclick = ()=>selectRank(r);
-    rankRow.appendChild(btn);
-  });
-
-  suitOrder.forEach(s=>{
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "pick-btn";
-    btn.dataset.suit = s;
-    btn.textContent = suitNameMap[s];
-    if(s === "♥" || s === "♦") btn.classList.add("red-text");
-    btn.onclick = ()=>selectSuit(s);
-    suitRow.appendChild(btn);
-  });
-
-  updatePendingUI();
-}
-
-function selectRank(r){
-  pendingRank = r;
-  updatePendingUI();
-  tryCommitCard();
-}
-
-function selectSuit(s){
-  pendingSuit = s;
-  updatePendingUI();
-  tryCommitCard();
-}
-
-function tryCommitCard(){
-  if(!pendingRank || !pendingSuit) return;
-
-  const card = pendingRank + pendingSuit;
-  if(hand.includes(card) || board.includes(card)){
-    document.getElementById("statusText").textContent = "这张牌已经选过了";
-    return;
+function monteCarlo(h,b,players,iters){
+  if(h.length<2||players<2)return 0;
+  const hi=new Uint8Array(h.map(c=>_S2I[c]??0)),bi=new Uint8Array(b.map(c=>_S2I[c]??0));
+  const excl=new Uint8Array(52);
+  hi.forEach(v=>excl[v]=1);bi.forEach(v=>excl[v]=1);
+  let poolLen=0;const pool=new Uint8Array(52);
+  for(let i=0;i<52;i++)if(!excl[i])pool[poolLen++]=i;
+  const need=5-b.length,sb=new Uint8Array(5),h7=new Uint8Array(7),o7=new Uint8Array(7);
+  let total=0;
+  for(let t=0;t<iters;t++){
+    const needed=need+players*2;
+    for(let i=0;i<needed&&i<poolLen;i++){const j=i+Math.floor(Math.random()*(poolLen-i));const tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;}
+    for(let i=0;i<bi.length;i++)sb[i]=bi[i];for(let i=0;i<need;i++)sb[bi.length+i]=pool[i];
+    h7[0]=hi[0];h7[1]=hi[1];for(let i=0;i<5;i++)h7[2+i]=sb[i];
+    const hs=evalScore(h7);let di=need,tie=1,lost=false;
+    for(let p=1;p<players;p++){o7[0]=pool[di++];o7[1]=pool[di++];for(let i=0;i<5;i++)o7[2+i]=sb[i];const os=evalScore(o7);if(os>hs){lost=true;break;}if(os===hs)tie++;}
+    if(!lost)total+=1/tie;
   }
-
-  if(hand.length < 2){
-    hand.push(card);
-  }else if(board.length < 5){
-    board.push(card);
-  }else{
-    return;
-  }
-
-  pendingRank = null;
-  pendingSuit = null;
-
-  updatePendingUI();
-  updateBoardUI();
-  autoCalcIfReady();
+  return total/iters;
 }
-
-function undoLast(){
-  if(board.length){
-    board.pop();
-  }else if(hand.length){
-    hand.pop();
-  }
-  pendingRank = null;
-  pendingSuit = null;
-  updatePendingUI();
-  updateBoardUI();
-  autoCalcIfReady();
+function suggest(eq,thr,pot,call,stack,type){
+  const ta=pot+call,depth=stack<30?"浅筹码":stack<80?"中筹码":"深筹码";
+  let action="弃牌",raise="不继续投入";
+  if(depth==="浅筹码"){if(eq>=0.55){action="全下";raise="按有效筹码打";}}
+  else{if(eq>=thr+0.10){if(["同花顺","四条","葫芦","同花","顺子","三条","两对"].includes(type)){action="加注";raise=String(Math.round(Math.max(call*2.5,ta*0.55)));}else if(type==="一对"){action="跟注/小加";raise=String(Math.round(Math.max(call*2,ta*0.40)));}else{action="跟注";raise="不建议大加";}}else if(eq>=thr+0.05){action="跟注";raise="控制投入";}}
+  return{action,raise,depth};
 }
-
-function resetAll(){
-  hand = [];
-  board = [];
-  pendingRank = null;
-  pendingSuit = null;
-
-  document.getElementById("equity").textContent = "--.-%";
-  document.getElementById("equity").className = "result";
-  document.getElementById("threshold").textContent = "--.-%";
-  document.getElementById("handType").textContent = "待计算";
-  document.getElementById("actionText").textContent = "待计算";
-  document.getElementById("raiseText").textContent = "待计算";
-  document.getElementById("mathText").textContent = "待计算";
-  document.getElementById("statusText").textContent = "翻牌三张后自动计算";
-
-  updatePendingUI();
-  updateBoardUI();
+function showResult(eq,thr,type,sug){
+  const diff=eq-thr,pct=(eq*100).toFixed(1);
+  const eEl=document.getElementById("equity");
+  if(eEl){eEl.innerHTML=pct+'<span class="equity-unit">%</span>';eEl.className="equity-num "+(diff>=0.05?"good":diff>=0?"mid":"bad");}
+  const bar=document.getElementById("prog-bar");if(bar)bar.style.width=pct+"%";
+  const pill=document.getElementById("action-pill");
+  if(pill){const cls=sug.action.startsWith("弃")?"action-fold":sug.action.startsWith("加")||sug.action.startsWith("全")?"action-raise":"action-call";pill.innerHTML=`<span class="action-pill ${cls}">${sug.action}</span>`;}
+  const note=document.getElementById("status-note");if(note)note.textContent=sug.depth+" · "+type;
+  document.getElementById("threshold").textContent=(thr*100).toFixed(1)+"%";
+  document.getElementById("hand-type").textContent=type;
+  document.getElementById("raise-to").textContent=sug.raise;
+  let math="数学上偏负收益";if(diff>=0.08)math="数学上明显占优";else if(diff>=0.02)math="数学上略占优";else if(diff>=-0.02)math="数学上接近临界";
+  document.getElementById("math-txt").textContent=math;
 }
-
-function addValue(id, amount){
-  const el = document.getElementById(id);
-  el.value = Number(el.value || 0) + amount;
-  autoCalcIfReady();
+function clearResult(){
+  const eEl=document.getElementById("equity");if(eEl){eEl.innerHTML='--<span class="equity-unit">%</span>';eEl.className="equity-num";}
+  const bar=document.getElementById("prog-bar");if(bar)bar.style.width="0%";
+  const pill=document.getElementById("action-pill");if(pill)pill.innerHTML="";
+  const note=document.getElementById("status-note");if(note)note.textContent="先在「选牌」页输入手牌";
+  ["threshold","hand-type","raise-to","math-txt"].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent="--";});
 }
-
-function setCallByRatio(ratio){
-  const pot = Number(document.getElementById("pot").value || 0);
-  document.getElementById("call").value = Math.round(pot * ratio);
-  autoCalcIfReady();
+function calcCore(h,b){
+  const pot=Number(document.getElementById("pot").value||0),call=Number(document.getElementById("call").value||0),stack=Number(document.getElementById("stack").value||200),players=Number(document.getElementById("players").value||4);
+  const thr=(pot+call)>0?call/(pot+call):0;
+  const iters=b.length===5?2000:b.length===4?1800:1500;
+  const type=handType(h,b),eq=monteCarlo(h,b,players,iters),sug=suggest(eq,thr,pot,call,stack,type);
+  showResult(eq,thr,type,sug);
 }
-
-function buildDeck(excluded){
-  const deck = [];
-  const fullRanks = ["2","3","4","5","6","7","8","9","T","J","Q","K","A"];
-  for(const r of fullRanks){
-    for(const s of suitOrder){
-      const c = r + s;
-      if(!excluded.includes(c)) deck.push(c);
-    }
-  }
-  return deck;
-}
-
-function shuffle(arr){
-  const a = [...arr];
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
-}
-
-function getRankCounts(cards){
-  const map = {};
-  for(const c of cards){
-    const r = c[0];
-    map[r] = (map[r] || 0) + 1;
-  }
-  return map;
-}
-
-function getSuitGroups(cards){
-  const map = {};
-  for(const c of cards){
-    const s = c[1];
-    if(!map[s]) map[s] = [];
-    map[s].push(c);
-  }
-  return map;
-}
-
-function findStraight(values){
-  const uniq = [...new Set(values)].sort((a,b)=>b-a);
-  if(uniq.includes(14)) uniq.push(1);
-
-  for(let i=0;i<=uniq.length-5;i++){
-    let ok = true;
-    for(let j=0;j<4;j++){
-      if(uniq[i+j] - 1 !== uniq[i+j+1]){
-        ok = false;
-        break;
-      }
-    }
-    if(ok) return uniq[i];
-  }
-  return 0;
-}
-
-function evaluate7(cards){
-  const counts = getRankCounts(cards);
-  const entries = Object.entries(counts).map(([r,c])=>({
-    rank:r,
-    count:c,
-    value:rankValue(r)
-  }));
-
-  entries.sort((a,b)=>{
-    if(b.count !== a.count) return b.count - a.count;
-    return b.value - a.value;
-  });
-
-  const suitsMap = getSuitGroups(cards);
-  let flushCards = null;
-  for(const s in suitsMap){
-    if(suitsMap[s].length >= 5){
-      flushCards = suitsMap[s].slice().sort((a,b)=>rankValue(b[0]) - rankValue(a[0]));
-      break;
-    }
-  }
-
-  if(flushCards){
-    const sfHigh = findStraight(flushCards.map(c=>rankValue(c[0])));
-    if(sfHigh) return [8, sfHigh];
-  }
-
-  if(entries[0].count === 4){
-    const four = entries[0].value;
-    const kicker = entries.filter(e=>e.value !== four)[0].value;
-    return [7, four, kicker];
-  }
-
-  if(entries[0].count === 3){
-    const pairLike = entries.filter((e,i)=>i>0 && e.count >= 2).sort((a,b)=>b.value-a.value);
-    if(pairLike.length){
-      return [6, entries[0].value, pairLike[0].value];
-    }
-  }
-
-  if(flushCards){
-    const top5 = flushCards.slice(0,5).map(c=>rankValue(c[0]));
-    return [5, ...top5];
-  }
-
-  const straightHigh = findStraight(cards.map(c=>rankValue(c[0])));
-  if(straightHigh) return [4, straightHigh];
-
-  if(entries[0].count === 3){
-    const triple = entries[0].value;
-    const kickers = entries
-      .filter(e=>e.value !== triple)
-      .map(e=>e.value)
-      .sort((a,b)=>b-a)
-      .slice(0,2);
-    return [3, triple, ...kickers];
-  }
-
-  const pairs = entries.filter(e=>e.count === 2).map(e=>e.value).sort((a,b)=>b-a);
-  if(pairs.length >= 2){
-    const highPair = pairs[0];
-    const lowPair = pairs[1];
-    const kicker = entries
-      .filter(e=>e.value !== highPair && e.value !== lowPair)
-      .map(e=>e.value)
-      .sort((a,b)=>b-a)[0];
-    return [2, highPair, lowPair, kicker];
-  }
-
-  if(pairs.length === 1){
-    const pair = pairs[0];
-    const kickers = entries
-      .filter(e=>e.value !== pair)
-      .map(e=>e.value)
-      .sort((a,b)=>b-a)
-      .slice(0,3);
-    return [1, pair, ...kickers];
-  }
-
-  const highs = entries.map(e=>e.value).sort((a,b)=>b-a).slice(0,5);
-  return [0, ...highs];
-}
-
-function compareHands(a, b){
-  const ra = evaluate7(a);
-  const rb = evaluate7(b);
-  const len = Math.max(ra.length, rb.length);
-
-  for(let i=0;i<len;i++){
-    const va = ra[i] || 0;
-    const vb = rb[i] || 0;
-    if(va > vb) return 1;
-    if(va < vb) return -1;
-  }
-  return 0;
-}
-
-function handTypeName(value){
-  return ["高牌","一对","两对","三条","顺子","同花","葫芦","四条","同花顺"][value];
-}
-
-function analyzeHandTypeCurrent(){
-  const all = [...hand, ...board];
-  if(all.length < 5) return "牌面未满5张";
-  return handTypeName(evaluate7(all)[0]);
-}
-
-function monteCarloEquity(iterations = 3000){
-  const players = Number(document.getElementById("players").value || 2);
-  const known = [...hand, ...board];
-
-  if(hand.length < 2 || players < 2) return 0;
-
-  let total = 0;
-
-  for(let t=0;t<iterations;t++){
-    let deck = shuffle(buildDeck(known));
-    const simBoard = [...board];
-
-    while(simBoard.length < 5){
-      simBoard.push(deck.shift());
-    }
-
-    const hero7 = [...hand, ...simBoard];
-    let tieCount = 1;
-    let heroLost = false;
-
-    for(let p=1;p<players;p++){
-      const opp7 = [deck.shift(), deck.shift(), ...simBoard];
-      const cmp = compareHands(hero7, opp7);
-
-      if(cmp < 0){
-        heroLost = true;
-        break;
-      }
-      if(cmp === 0){
-        tieCount++;
-      }
-    }
-
-    if(!heroLost){
-      total += 1 / tieCount;
-    }
-  }
-
-  return total / iterations;
-}
-
-function calcSuggestion(equity, threshold){
-  const pot = Number(document.getElementById("pot").value || 0);
-  const call = Number(document.getElementById("call").value || 0);
-  const stack = Number(document.getElementById("stack").value || 0);
-  const totalAfterCall = pot + call;
-  const type = analyzeHandTypeCurrent();
-
-  let depthType = "深筹码";
-  if(stack < 30) depthType = "浅筹码";
-  else if(stack < 80) depthType = "中筹码";
-
-  let buffer = depthType === "浅筹码" ? 0.10 : 0.05;
-  let action = "弃牌";
-  let raiseTo = "不继续投入";
-
-  if(depthType === "浅筹码"){
-    if(equity >= 0.55){
-      action = "全下/继续";
-      raiseTo = "按有效筹码打";
-    }
-  }else{
-    if(equity >= threshold + 0.10){
-      if(["同花顺","四条","葫芦","同花","顺子","三条","两对"].includes(type)){
-        action = "加注";
-        raiseTo = String(Math.round(Math.max(call * 2.5, totalAfterCall * 0.55)));
-      }else if(type === "一对"){
-        action = "跟注/小加";
-        raiseTo = String(Math.round(Math.max(call * 2, totalAfterCall * 0.40)));
-      }else if(equity >= threshold + buffer){
-        action = "跟注";
-        raiseTo = "不建议大加";
-      }
-    }else if(equity >= threshold + buffer){
-      action = "跟注";
-      raiseTo = "控制投入";
-    }
-  }
-
-  return { action, raiseTo, depthType };
-}
-
-function calc(force=false){
-  if(hand.length < 2) return;
-  if(board.length < 3 && !force) return;
-
-  const pot = Number(document.getElementById("pot").value || 0);
-  const call = Number(document.getElementById("call").value || 0);
-  if([pot, call].some(v => Number.isNaN(v) || v < 0)) return;
-
-  const threshold = (pot + call) > 0 ? call / (pot + call) : 0;
-
-  let iterations = 2500;
-  if(board.length === 4) iterations = 3500;
-  if(board.length === 5) iterations = 5000;
-
-  const equity = monteCarloEquity(iterations);
-  const type = analyzeHandTypeCurrent();
-  const diff = equity - threshold;
-  const suggestion = calcSuggestion(equity, threshold);
-
-  const equityEl = document.getElementById("equity");
-  equityEl.textContent = (equity * 100).toFixed(1) + "%";
-  equityEl.className = "result " + (diff >= 0.05 ? "good" : diff >= 0 ? "mid" : "bad");
-
-  document.getElementById("threshold").textContent = (threshold * 100).toFixed(1) + "%";
-  document.getElementById("handType").textContent = type;
-  document.getElementById("actionText").textContent = suggestion.action + " | " + suggestion.depthType;
-  document.getElementById("raiseText").textContent = suggestion.raiseTo;
-
-  let math = "数学上偏负收益";
-  if(diff >= 0.08) math = "数学上明显占优";
-  else if(diff >= 0.02) math = "数学上略占优";
-  else if(diff >= -0.02) math = "数学上接近临界";
-  document.getElementById("mathText").textContent = math;
-
-  if(board.length === 3) document.getElementById("statusText").textContent = "翻牌已自动计算";
-  else if(board.length === 4) document.getElementById("statusText").textContent = "转牌已自动重算";
-  else if(board.length === 5) document.getElementById("statusText").textContent = "河牌已自动重算";
-  else document.getElementById("statusText").textContent = "已计算";
-}
-
-function autoCalcIfReady(){
-  if(hand.length < 2){
-    document.getElementById("equity").textContent = "--.-%";
-    document.getElementById("equity").className = "result";
-    document.getElementById("statusText").textContent = "先选两张手牌";
-    document.getElementById("threshold").textContent = "--.-%";
-    document.getElementById("handType").textContent = "待计算";
-    document.getElementById("actionText").textContent = "待计算";
-    document.getElementById("raiseText").textContent = "待计算";
-    document.getElementById("mathText").textContent = "待计算";
-    return;
-  }
-
-  if(board.length >= 3){
-    calc();
-  }else{
-    document.getElementById("equity").textContent = "--.-%";
-    document.getElementById("equity").className = "result";
-    document.getElementById("statusText").textContent = "翻牌三张后自动计算";
-    document.getElementById("threshold").textContent = "--.-%";
-    document.getElementById("handType").textContent = "待计算";
-    document.getElementById("actionText").textContent = "待计算";
-    document.getElementById("raiseText").textContent = "待计算";
-    document.getElementById("mathText").textContent = "待计算";
-  }
-}
-
-const imageInput = document.getElementById("imageInput");
-const imageCanvas = document.getElementById("imageCanvas");
-const imageStatus = document.getElementById("imageStatus");
-const imageCtx = imageCanvas.getContext("2d");
-
-imageInput.addEventListener("change", handleImageFile);
-
-function handleImageFile(e){
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    const img = new Image();
-    img.onload = function(){
-      loadedImage = img;
-      drawImageToCanvas(img);
-      imageStatus.textContent = "已导入图片：" + file.name;
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function drawImageToCanvas(img){
-  const maxWidth = 900;
-  const scale = Math.min(1, maxWidth / img.width);
-
-  imageCanvas.width = Math.round(img.width * scale);
-  imageCanvas.height = Math.round(img.height * scale);
-
-  imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-  imageCtx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
-  imageCanvas.style.display = "block";
-}
-
-async function captureScreen(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
-    imageStatus.textContent = "当前浏览器不支持截图导入";
-    return;
-  }
-
+function autoCalc(){if(hand.length<2){clearResult();return;}calcCore(hand,board);}
+function calcManual(force=false){if(hand.length<2)return;if(board.length<3&&!force)return;calcCore(hand,board);goPage("calc");}
+function addVal(id,v){const el=document.getElementById(id);if(el){el.value=Number(el.value||0)+v;calcManual(true);}}
+function setRatio(r){const pot=Number(document.getElementById("pot").value||0);document.getElementById("call").value=Math.round(pot*r);calcManual(true);}
+["players","pot","call","stack"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("change",()=>{if(hand.length>=2)calcCore(hand,board);});});
+function handleFile(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{imgB64=ev.target.result.split(",")[1];document.getElementById("preview-img").src=ev.target.result;document.getElementById("upload-area").style.display="none";document.getElementById("preview-area").style.display="block";};reader.readAsDataURL(file);}
+function clearScan(){imgB64=null;document.getElementById("upload-area").style.display="block";document.getElementById("preview-area").style.display="none";document.getElementById("file-input").value="";document.getElementById("recog-panel").style.display="none";document.getElementById("ai-note").style.display="none";setAiStatus("idle","上传截图后点击识别");}
+function setAiStatus(state,txt){const d=document.getElementById("ai-dot"),t=document.getElementById("ai-status-txt");d.className="ai-dot"+(state==="thinking"?" thinking":state==="done"?" done":state==="error"?" error":"");t.textContent=txt;}
+async function runScan(){
+  if(!imgB64){alert("请先上传截图");return;}
+  const btn=document.getElementById("scan-btn");btn.disabled=true;btn.textContent="AI 识别中…";
+  setAiStatus("thinking","AI 正在分析牌面…");
+  document.getElementById("ai-note").style.display="none";document.getElementById("recog-panel").style.display="none";
+  const prompt=`你是德州扑克截图识别专家。分析这张手机截图。\n\n区分规则：\n- 【手牌】屏幕最下方靠近你的头像的2张牌\n- 【公共牌】桌面中央3-5张横排的牌\n\n格式：点数(A K Q J T 9-2)+花色(♠♥♦♣)，10用T。\n只返回JSON：{"hand":["T♠","5♦"],"board":["J♦","4♣","8♦"],"confidence":"high/medium/low","notes":"说明位置"}\n无法识别返回[]。`;
   try{
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: false
-    });
-
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.muted = true;
-    video.playsInline = true;
-
-    await video.play();
-
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = video.videoWidth;
-    tempCanvas.height = video.videoHeight;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-
-    const img = new Image();
-    img.onload = function(){
-      loadedImage = img;
-      drawImageToCanvas(img);
-      imageStatus.textContent = "已导入截图";
-    };
-    img.src = tempCanvas.toDataURL("image/png");
-
-    stream.getTracks().forEach(track => track.stop());
+    const apiKey=localStorage.getItem("anthropic_api_key")||"";
+    if(!apiKey)throw new Error("请先在「设置」页填入 API Key");
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:imgB64}},{type:"text",text:prompt}]}]})});
+    if(!res.ok)throw new Error("API错误 "+res.status);
+    const data=await res.json(),raw=data.content.map(i=>i.text||"").join("");
+    let parsed;try{parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){throw new Error("无法解析结果");}
+    const note=document.getElementById("ai-note");note.style.display="block";
+    const conf=parsed.confidence==="high"?"高✓":parsed.confidence==="medium"?"中△":"低✗";
+    note.innerHTML=`置信度：<span>${conf}</span>${parsed.notes?" · "+parsed.notes:""}`;
+    aiHand=(parsed.hand||[]).slice(0,2);aiBoard=(parsed.board||[]).slice(0,5);
+    renderRecog();hand=aiHand;board=aiBoard;refreshBoard();autoCalc();
+    setAiStatus("done","识别完成");btn.disabled=false;btn.textContent="🤖 AI 识别并计算胜率";
+    setTimeout(()=>goPage("calc"),600);
   }catch(err){
-    imageStatus.textContent = "截图失败或已取消";
-    console.error(err);
+    setAiStatus("error","失败："+err.message);
+    const note=document.getElementById("ai-note");note.style.display="block";
+    note.innerHTML=`<span style="color:var(--bad)">${err.message}</span>`;
+    btn.disabled=false;btn.textContent="🤖 AI 识别并计算胜率";
   }
 }
-
-function clearImage(){
-  loadedImage = null;
-  imageCanvas.style.display = "none";
-  imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-  imageStatus.textContent = "还没有导入图片";
-  imageInput.value = "";
+function renderRecog(){
+  const hp=document.getElementById("recog-hand"),bp=document.getElementById("recog-board");hp.innerHTML="";bp.innerHTML="";
+  const mk=(c,arr,i)=>{const d=document.createElement("div");d.className="rcard "+(isRed(c)?"red":"black");d.textContent=dispCard(c);d.onclick=()=>{arr.splice(i,1);renderRecog();hand=aiHand;board=aiBoard;refreshBoard();autoCalc();};return d;};
+  aiHand.forEach((c,i)=>hp.appendChild(mk(c,aiHand,i)));
+  if(!aiHand.length){const e=document.createElement("div");e.className="rcard empty";e.textContent="未识别";hp.appendChild(e);}
+  aiBoard.forEach((c,i)=>bp.appendChild(mk(c,aiBoard,i)));
+  if(!aiBoard.length){const e=document.createElement("div");e.className="rcard empty";e.textContent="翻牌前";bp.appendChild(e);}
+  document.getElementById("recog-panel").style.display="block";
 }
-
-["players","pot","call","stack"].forEach(id=>{
-  const el = document.getElementById(id);
-  el.addEventListener("input", autoCalcIfReady);
-  el.addEventListener("change", autoCalcIfReady);
-});
-
-renderPickers();
-updateBoardUI();
-autoCalcIfReady();
+function onApiKeyInput(){document.getElementById("apikey-status").textContent="";}
+function saveApiKey(){const val=document.getElementById("apikey-input").value.trim();if(!val){showKeyStatus("请输入 API Key","var(--bad)");return;}if(!val.startsWith("sk-ant-")){showKeyStatus("格式不对，应以 sk-ant- 开头","var(--bad)");return;}localStorage.setItem("anthropic_api_key",val);showKeyStatus("✓ 已保存，截图识别可以用了","var(--good)");}
+function clearApiKey(){localStorage.removeItem("anthropic_api_key");document.getElementById("apikey-input").value="";showKeyStatus("已清除","var(--muted)");}
+function toggleApiKeyVis(){const inp=document.getElementById("apikey-input");inp.type=inp.type==="password"?"text":"password";}
+function showKeyStatus(msg,color){const el=document.getElementById("apikey-status");el.textContent=msg;el.style.color=color||"var(--muted)";}
+function initApiKey(){const saved=localStorage.getItem("anthropic_api_key")||"";if(saved){document.getElementById("apikey-input").value=saved;showKeyStatus("✓ 已加载 API Key","var(--good)");}}
+buildPickers();refreshBoard();clearResult();initApiKey();
 </script>
 </body>
 </html>
